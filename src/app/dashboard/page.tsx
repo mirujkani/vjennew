@@ -12,9 +12,9 @@ const todayAppointments = appointments.filter(a => a.date === todayStr);
 // Get next 7 days appointments
 const next7Days: Date[] = [];
 for (let i = 0; i < 7; i++) {
-    const date = new Date();
-    date.setDate(date.getDate() + i);
-    next7Days.push(date.toISOString().split('T')[0]);
+  const date = new Date();
+  date.setDate(date.getDate() + i);
+  next7Days.push(date);
 }
 const weekAppointments = appointments.filter(a => next7Days.includes(a.date));
 
