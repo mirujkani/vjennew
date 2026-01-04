@@ -10,7 +10,7 @@ const todayStr = new Date().toISOString().split('T')[0];
 const todayAppointments = appointments.filter(a => a.date === todayStr);
 
 // Get next 7 days appointments
-const next7Days = [];
+const next7Days: Date[] = [];
 for (let i = 0; i < 7; i++) {
     const date = new Date();
     date.setDate(date.getDate() + i);
