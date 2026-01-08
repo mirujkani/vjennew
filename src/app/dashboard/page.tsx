@@ -9,17 +9,22 @@ const appointments = mockAppointments.filter(a => a.businessId === business.id);
 const todayStr = new Date().toISOString().split('T')[0];
 const todayAppointments = appointments.filter(a => a.date === todayStr);
 
-// Get next 7 days appointments
-const next7Days: Date[] = [];
-for (let i = 0; i < 7; i++) {
-  const date = new Date();
-  date.setDate(date.getDate() + i);
-  next7Days.push(date);
-}
-const weekAppointments = appointments.filter(a => next7Days.includes(a.date));
-
-const stats = [
-    {
+[
+      "const todayStr = new Date().toISOString().split('T')[0];",
+      "const todayAppointments = appointments.filter(a => a.date === todayStr);",
+      "",
+      "// Get next 7 days (YYYY-MM-DD strings)",
+      "const next7Days: string[] = Array.from({ length: 7 }, (_, i) => {",
+      "  const d = new Date();",
+      "  d.setDate(d.getDate() + i);",
+      "  return d.toISOString().split('T')[0];",
+      "});",
+      "",
+      "const weekAppointments = appointments.filter(a => next7Days.includes(a.date));",
+      "",
+      "const stats = ["
+    ]
+  }
         label: "Today's Appointments",
         value: todayAppointments.length,
         icon: (
