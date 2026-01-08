@@ -1,367 +1,355 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import CalendarPicker from '@/components/booking/CalendarPicker';
 import TimeSlotGrid from '@/components/booking/TimeSlotGrid';
 import BookingConfirmation from '@/components/booking/BookingConfirmation';
 import BookingSuccess from '@/components/booking/BookingSuccess';
-import {
-    getBusinessById,
-    getPhysiotherapistsByBusiness,
-    getAvailabilityByBusiness,
-    getAppointmentsByDate,
-    generateTimeSlots,
-} from '@/lib/data';
-import { BookingFormData, Physiotherapist } from '@/lib/types';
+import { BookingFormData, Specialist, Business, Availability, WaitlistEntry } from '@/lib/types';
+import { createWaitlistEntry, getBusinessByLink, getSpecialists, getAvailability, generateTimeSlots, createAppointment } from '@/lib/store';
 
 export default function BookingPage() {
     const params = useParams();
-    const router = useRouter();
     const businessId = params.businessId as string;
 
-    // Get business data
-    const business = getBusinessById(businessId);
-    const physiotherapists = business ? getPhysiotherapistsByBusiness(business.id) : [];
-    const availability = business ? getAvailabilityByBusiness(business.id) : null;
-
-    // State
-    const [selectedDate, setSelectedDate] = useState<string | null>(null);
-    const [selectedTime, setSelectedTime] = useState<string | null>(null);
-    const [selectedPhysiotherapist, setSelectedPhysiotherapist] = useState<Physiotherapist | null>(
-        physiotherapists[0] || null
-    );
-    const [showConfirmation, setShowConfirmation] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
+    const [business, setBusiness] = useState<Business | null>(null);
+    const [specialists, setSpecialists] = useState<Specialist[]>([]);
+    const [selectedSpecialist, setSelectedSpecialist] = useState<Specialist | null>(null);
+    const [availability, setAvailability] = useState<Availability | null>(null);
+    const [selectedDate, setSelectedDate] = useState<string>('');
+    const [timeSlots, setTimeSlots] = useState<{ time: string; available: boolean; reason?: string }[]>([]);
+    const [selectedTime, setSelectedTime] = useState<string>('');
+    const [selectedWaitlistTimes, setSelectedWaitlistTimes] = useState<string[]>([]);
+    const [isWaitlistMode, setIsWaitlistMode] = useState(false);
+    const [step, setStep] = useState<'selection' | 'confirmation' | 'waitlist_confirmation' | 'success'>('selection');
+    const [lastAppointment, setLastAppointment] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [bookedClientName, setBookedClientName] = useState('');
 
-    // Generate time slots for selected date
-    const timeSlots = useMemo(() => {
-        if (!selectedDate || !availability || !business) return [];
-        const existingAppointments = getAppointmentsByDate(business.id, selectedDate);
-        return generateTimeSlots(availability, selectedDate, existingAppointments);
-    }, [selectedDate, availability, business]);
+    useEffect(() => {
+        const loadInitialData = async () => {
+            try {
+                // Find business by uniqueLink (which is the businessId param in the URL)
+                const biz = await getBusinessByLink(businessId);
 
-    // Handle date selection
+                if (biz) {
+                    const [specs, avail] = await Promise.all([
+                        getSpecialists(biz.id),
+                        getAvailability(biz.id)
+                    ]);
+
+                    setBusiness(biz);
+                    setSpecialists(specs);
+                    if (specs.length > 0) setSelectedSpecialist(specs[0]);
+                    setAvailability(avail);
+                }
+            } catch (error) {
+                console.error('Error loading booking data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadInitialData();
+    }, [businessId]);
+
+    useEffect(() => {
+        if (selectedDate && business) {
+            const loadSlots = async () => {
+                const slots = await generateTimeSlots(selectedDate, business.id);
+                setTimeSlots(slots);
+            };
+            loadSlots();
+        }
+    }, [selectedDate, business]);
+
     const handleDateSelect = (date: string) => {
         setSelectedDate(date);
-        setSelectedTime(null); // Reset time when date changes
+        setSelectedTime(''); // Clear time when date changes
     };
 
-    // Handle time selection
-    const handleTimeSelect = (time: string) => {
-        setSelectedTime(time);
-        setShowConfirmation(true);
+    const handleTimeSelect = (timeCode: string) => {
+        // timeCode might be "HH:MM-duration" if we support flexible durations
+        // For now, let's just handle HH:MM
+        setSelectedTime(timeCode);
+        setStep('confirmation');
     };
 
-    // Handle booking confirmation
-    const handleConfirm = async (data: BookingFormData) => {
+    const handleBookedSlotClick = (time: string) => {
+        setIsWaitlistMode(true);
+        setSelectedWaitlistTimes(prev =>
+            prev.includes(time) ? prev : [...prev, time]
+        );
+    };
+
+    const handleConfirm = async (formData: BookingFormData) => {
+        if (!selectedSpecialist || !business) return;
         setIsSubmitting(true);
-
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        setBookedClientName(data.name);
-        setIsSubmitting(false);
-        setShowConfirmation(false);
-        setShowSuccess(true);
+        try {
+            const appointment = await createAppointment(
+                {
+                    ...formData,
+                    date: selectedDate,
+                    time: selectedTime,
+                    duration: availability?.defaultDuration || 30,
+                },
+                selectedSpecialist.id,
+                'pending',
+                business.id
+            );
+            setLastAppointment(appointment);
+            setStep('success');
+        } catch (error) {
+            console.error('Error creating appointment:', error);
+            alert('Dështoi rezervimi i terminit. Ju lutem provoni përsëri.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    // Handle success close
-    const handleSuccessClose = () => {
-        setShowSuccess(false);
-        setSelectedDate(null);
-        setSelectedTime(null);
+    const handleWaitlistConfirm = async (formData: any) => {
+        if (!business) return;
+        setIsSubmitting(true);
+        try {
+            await createWaitlistEntry({
+                businessId: business.id,
+                clientName: formData.name,
+                clientPhone: formData.phone,
+                clientEmail: formData.email,
+                preferredDates: [selectedDate],
+                preferredTimes: selectedWaitlistTimes,
+                notes: formData.notes,
+            });
+            setLastAppointment({ clientName: formData.name }); // For Success screen
+            setStep('success');
+        } catch (error) {
+            console.error('Error joining waitlist:', error);
+            alert('Dështoi bashkimi në listën e pritjes. Ju lutem provoni përsëri.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    // Not found state
-    if (!business) {
+    const toggleWaitlistTime = (time: string) => {
+        setSelectedWaitlistTimes(prev =>
+            prev.includes(time) ? prev.filter(t => t !== time) : [...prev, time]
+        );
+    };
+
+    if (isLoading) {
         return (
-            <div style={{
-                minHeight: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 'var(--space-6)',
-                textAlign: 'center',
-            }}>
-                <div style={{
-                    width: '80px',
-                    height: '80px',
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    borderRadius: 'var(--radius-full)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 'var(--space-6)',
-                }}>
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-error-500)" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <line x1="12" y1="8" x2="12" y2="12" />
-                        <line x1="12" y1="16" x2="12.01" y2="16" />
-                    </svg>
-                </div>
-                <h1 style={{ marginBottom: 'var(--space-4)' }}>Business Not Found</h1>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-6)' }}>
-                    The booking link you followed doesn't exist or has been removed.
-                </p>
-                <Link href="/" className="btn btn-primary">
-                    Go to Homepage
-                </Link>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-primary)' }}>
+                <div className="spinner" />
             </div>
         );
     }
 
-    const formatSelectedDate = (dateStr: string) => {
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-        });
-    };
+    if (!business) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-primary)', padding: 'var(--space-6)', textAlign: 'center' }}>
+                <h1 style={{ color: 'var(--text-primary)', marginBottom: 'var(--space-4)' }}>Biznesi nuk u gjet</h1>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-6)' }}>Linku që po kërkoni mund të jetë i pasaktë ose ka skaduar.</p>
+                <Link href="/" className="btn btn-primary">Kthehu në Faqen Kryesore</Link>
+            </div>
+        );
+    }
 
     return (
-        <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
-            {/* Header */}
-            <header style={{
-                padding: 'var(--space-4) var(--space-6)',
-                borderBottom: '1px solid var(--border-color)',
-                background: 'var(--bg-secondary)',
-            }}>
-                <div style={{
-                    maxWidth: '800px',
-                    margin: '0 auto',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-4)',
-                }}>
-                    <div style={{
-                        width: '48px',
-                        height: '48px',
-                        background: 'var(--gradient-primary)',
-                        borderRadius: 'var(--radius-lg)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                    }}>
-                        <span style={{ fontSize: 'var(--text-xl)', fontWeight: 'bold', color: 'white' }}>
-                            {business.name.charAt(0)}
-                        </span>
-                    </div>
-                    <div>
-                        <h1 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>{business.name}</h1>
-                        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 0 }}>
+        <div className="booking-page" style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
+            <div style={{ maxWidth: '600px', margin: '0 auto', padding: 'var(--space-6)' }}>
+                {/* Header */}
+                <header style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
+                    {business.logo && (
+                        <div style={{ position: 'relative', width: '80px', height: '80px', margin: '0 auto var(--space-6)' }}>
+                            <img
+                                src={business.logo}
+                                alt={business.name}
+                                style={{ width: '100%', height: '100%', borderRadius: 'var(--radius-xl)', objectFit: 'cover', boxShadow: 'var(--shadow-lg)' }}
+                            />
+                        </div>
+                    )}
+                    <h1 style={{ fontSize: 'var(--text-3xl)', color: 'var(--text-primary)', marginBottom: 'var(--space-2)' }}>{business.name}</h1>
+                    {business.address && (
+                        <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                <circle cx="12" cy="10" r="3" />
+                            </svg>
                             {business.address}
                         </p>
-                    </div>
-                </div>
-            </header>
+                    )}
+                    {business.description && (
+                        <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto', fontSize: 'var(--text-sm)' }}>{business.description}</p>
+                    )}
+                </header>
 
-            {/* Main Content */}
-            <main style={{
-                maxWidth: '800px',
-                margin: '0 auto',
-                padding: 'var(--space-6)',
-            }}>
-                {/* Business Info Card */}
-                <div
-                    className="card animate-fade-in-up"
-                    style={{
-                        marginBottom: 'var(--space-6)',
-                        background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.1) 0%, transparent 100%)',
-                    }}
-                >
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
-                        <div style={{ flex: 1, minWidth: '200px' }}>
-                            <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-3)' }}>
-                                Book an Appointment
-                            </h2>
-                            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: 'var(--text-sm)' }}>
-                                {business.description}
-                            </p>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                            <a
-                                href={`tel:${business.phone}`}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 'var(--space-2)',
-                                    color: 'var(--text-secondary)',
-                                    fontSize: 'var(--text-sm)',
-                                }}
-                            >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
-                                </svg>
-                                {business.phone}
-                            </a>
-                            <a
-                                href={`mailto:${business.email}`}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 'var(--space-2)',
-                                    color: 'var(--text-secondary)',
-                                    fontSize: 'var(--text-sm)',
-                                }}
-                            >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                                    <polyline points="22,6 12,13 2,6" />
-                                </svg>
-                                {business.email}
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Physiotherapist Selection (if multiple) */}
-                {physiotherapists.length > 1 && (
-                    <div className="animate-fade-in-up stagger-1" style={{ marginBottom: 'var(--space-6)' }}>
-                        <h3 style={{ fontSize: 'var(--text-base)', marginBottom: 'var(--space-4)', color: 'var(--text-secondary)' }}>
-                            Select Physiotherapist
-                        </h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--space-3)' }}>
-                            {physiotherapists.map((pt) => (
+                {/* Specialist Selection (only if more than 1) */}
+                {specialists.length > 1 && step === 'selection' && (
+                    <div style={{ marginBottom: 'var(--space-6)' }}>
+                        <h3 style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-3)' }}>Zgjidhni Specialistin:</h3>
+                        <div style={{ display: 'flex', gap: 'var(--space-3)', overflowX: 'auto', paddingBottom: 'var(--space-2)' }}>
+                            {specialists.map(spec => (
                                 <button
-                                    key={pt.id}
-                                    onClick={() => setSelectedPhysiotherapist(pt)}
-                                    className={`card card-interactive ${selectedPhysiotherapist?.id === pt.id ? 'selected' : ''}`}
+                                    key={spec.id}
+                                    onClick={() => setSelectedSpecialist(spec)}
                                     style={{
-                                        padding: 'var(--space-4)',
-                                        textAlign: 'left',
-                                        border: selectedPhysiotherapist?.id === pt.id ? '1px solid var(--color-primary-500)' : '1px solid var(--border-color)',
-                                        background: selectedPhysiotherapist?.id === pt.id ? 'rgba(20, 184, 166, 0.1)' : 'var(--bg-glass)',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: 'var(--space-2)',
+                                        padding: 'var(--space-3)',
+                                        borderRadius: 'var(--radius-lg)',
+                                        border: selectedSpecialist?.id === spec.id ? '2px solid var(--color-primary-500)' : '1px solid var(--border-color)',
+                                        background: selectedSpecialist?.id === spec.id ? 'rgba(20, 184, 166, 0.05)' : 'var(--bg-glass)',
+                                        minWidth: '120px',
+                                        cursor: 'pointer',
                                     }}
                                 >
-                                    <div style={{
-                                        width: '40px',
-                                        height: '40px',
-                                        background: 'var(--gradient-accent)',
-                                        borderRadius: 'var(--radius-full)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        marginBottom: 'var(--space-3)',
-                                    }}>
-                                        <span style={{ color: 'white', fontWeight: 'var(--font-semibold)' }}>
-                                            {pt.name.charAt(0)}
-                                        </span>
+                                    <div style={{ width: '40px', height: '40px', background: 'var(--gradient-accent)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
+                                        {spec.name.charAt(0)}
                                     </div>
-                                    <div style={{ fontWeight: 'var(--font-medium)', color: 'var(--text-primary)', marginBottom: 'var(--space-1)' }}>
-                                        {pt.name}
-                                    </div>
-                                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-                                        {pt.title}
-                                    </div>
+                                    <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', whiteSpace: 'nowrap' }}>{spec.name}</span>
                                 </button>
                             ))}
                         </div>
                     </div>
                 )}
 
-                {/* Single Physiotherapist Display */}
-                {physiotherapists.length === 1 && selectedPhysiotherapist && (
-                    <div
-                        className="card animate-fade-in-up stagger-1"
-                        style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)' }}
-                    >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-                            <div style={{
-                                width: '56px',
-                                height: '56px',
-                                background: 'var(--gradient-accent)',
-                                borderRadius: 'var(--radius-full)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0,
-                            }}>
-                                <span style={{ color: 'white', fontWeight: 'var(--font-bold)', fontSize: 'var(--text-xl)' }}>
-                                    {selectedPhysiotherapist.name.charAt(0)}
-                                </span>
-                            </div>
-                            <div>
-                                <div style={{ fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)', marginBottom: 'var(--space-1)' }}>
-                                    {selectedPhysiotherapist.name}
-                                </div>
-                                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginBottom: 'var(--space-2)' }}>
-                                    {selectedPhysiotherapist.title}
-                                </div>
-                                <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                                    {selectedPhysiotherapist.specialties.map((spec) => (
-                                        <span key={spec} className="badge badge-primary">
-                                            {spec}
-                                        </span>
-                                    ))}
-                                </div>
+                {/* Main Content Areas */}
+                {step === 'selection' && (
+                    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+                        <div>
+                            <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>Zgjidhni Datën</h2>
+                            <div className="card" style={{ padding: 'var(--space-4)' }}>
+                                <CalendarPicker
+                                    onDateSelect={handleDateSelect}
+                                    selectedDate={selectedDate}
+                                    workingDays={availability?.workingDays || [1, 2, 3, 4, 5]}
+                                />
                             </div>
                         </div>
+
+                        {selectedDate && (
+                            <div className="animate-slide-up">
+                                <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>Zgjidhni Orën</h2>
+                                <div className="card" style={{ padding: 'var(--space-1)' }}>
+                                    <TimeSlotGrid
+                                        slots={timeSlots}
+                                        onTimeSelect={handleTimeSelect}
+                                        onBookedSlotClick={handleBookedSlotClick}
+                                        selectedTime={selectedTime}
+                                        mode={isWaitlistMode ? 'waitlist' : 'booking'}
+                                        selectedTimes={selectedWaitlistTimes}
+                                        onToggleTime={toggleWaitlistTime}
+                                    />
+                                </div>
+
+                                {/* Waitlist Checkbox */}
+                                {timeSlots.some(slot => slot.reason === 'booked') && (
+                                    <div style={{ marginTop: 'var(--space-6)', padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border-color)', background: 'var(--bg-secondary)' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', cursor: 'pointer' }}>
+                                            <input
+                                                type="checkbox"
+                                                checked={isWaitlistMode}
+                                                onChange={(e) => {
+                                                    setIsWaitlistMode(e.target.checked);
+                                                    if (!e.target.checked) setSelectedWaitlistTimes([]);
+                                                }}
+                                                style={{ width: '18px', height: '18px', accentColor: 'var(--color-primary-500)' }}
+                                            />
+                                            <div>
+                                                <p style={{ margin: 0, fontWeight: 'var(--font-medium)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+                                                    Dëshironi të shtoheni në listën e pritjes?
+                                                </p>
+                                                <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                                                    Do t'ju njoftojmë nëse orari juaj i preferuar bëhet i lirë përsëri.
+                                                </p>
+                                            </div>
+                                        </label>
+
+                                        {isWaitlistMode && (
+                                            <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--border-color)' }}>
+                                                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--space-3)' }}>
+                                                    {selectedWaitlistTimes.length === 0 ? 'Zgjidhni oraret më lart për të cilat dëshironi të njoftoheni.' : 'Keni zgjedhur:'}
+                                                </p>
+                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
+                                                    {selectedWaitlistTimes.map(time => (
+                                                        <span key={time} className="badge badge-primary" style={{ padding: 'var(--space-1) var(--space-2)' }}>
+                                                            {time}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                {selectedWaitlistTimes.length > 0 && (
+                                                    <button
+                                                        className="btn btn-primary btn-sm w-full"
+                                                        onClick={() => setStep('waitlist_confirmation')}
+                                                        style={{ marginTop: 'var(--space-3)' }}
+                                                    >
+                                                        Vazhdo me Listën e Pritjes ({selectedWaitlistTimes.length})
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 )}
 
-                {/* Calendar Section */}
-                <div className="card animate-fade-in-up stagger-2" style={{ marginBottom: 'var(--space-6)' }}>
-                    <h3 style={{ fontSize: 'var(--text-base)', marginBottom: 'var(--space-4)', color: 'var(--text-secondary)' }}>
-                        Select a Date
-                    </h3>
-                    {availability && (
-                        <CalendarPicker
-                            selectedDate={selectedDate}
-                            onDateSelect={handleDateSelect}
-                            workingDays={availability.workingDays}
-                        />
-                    )}
-                </div>
-
-                {/* Time Slots Section */}
-                {selectedDate && (
-                    <div className="card animate-fade-in-up" style={{ marginBottom: 'var(--space-6)' }}>
-                        <h3 style={{ fontSize: 'var(--text-base)', marginBottom: 'var(--space-2)', color: 'var(--text-secondary)' }}>
-                            Available Times
-                        </h3>
-                        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-4)' }}>
-                            {formatSelectedDate(selectedDate)} • {availability?.defaultDuration || 30} min sessions
-                        </p>
-                        <TimeSlotGrid
-                            slots={timeSlots}
-                            selectedTime={selectedTime}
-                            onTimeSelect={handleTimeSelect}
-                        />
-                    </div>
+                {step === 'confirmation' && (
+                    <BookingConfirmation
+                        businessName={business.name}
+                        specialistName={selectedSpecialist?.name || ''}
+                        date={selectedDate}
+                        time={selectedTime}
+                        duration={availability?.defaultDuration || 30}
+                        onConfirm={handleConfirm}
+                        onCancel={() => setStep('selection')}
+                        isSubmitting={isSubmitting}
+                    />
                 )}
-            </main>
 
-            {/* Booking Confirmation Modal */}
-            {showConfirmation && selectedDate && selectedTime && selectedPhysiotherapist && (
-                <BookingConfirmation
-                    businessName={business.name}
-                    physiotherapistName={selectedPhysiotherapist.name}
-                    date={selectedDate}
-                    time={selectedTime}
-                    duration={availability?.defaultDuration || 30}
-                    onConfirm={handleConfirm}
-                    onCancel={() => setShowConfirmation(false)}
-                    isSubmitting={isSubmitting}
-                />
-            )}
+                {step === 'waitlist_confirmation' && (
+                    <BookingConfirmation
+                        isWaitlist
+                        businessName={business.name}
+                        specialistName={selectedSpecialist?.name || ''}
+                        date={selectedDate}
+                        time={selectedWaitlistTimes.join(', ')}
+                        duration={0}
+                        onConfirm={handleWaitlistConfirm}
+                        onCancel={() => setStep('selection')}
+                        isSubmitting={isSubmitting}
+                    />
+                )}
 
-            {/* Success Modal */}
-            {showSuccess && selectedDate && selectedTime && (
-                <BookingSuccess
-                    clientName={bookedClientName}
-                    businessName={business.name}
-                    date={selectedDate}
-                    time={selectedTime}
-                    onClose={handleSuccessClose}
-                />
-            )}
+                {step === 'success' && lastAppointment && (
+                    <BookingSuccess
+                        businessName={business.name}
+                        specialistName={selectedSpecialist?.name || ''}
+                        date={lastAppointment.date}
+                        time={lastAppointment.time}
+                        clientName={lastAppointment.clientName}
+                        onRestart={() => {
+                            setStep('selection');
+                            setSelectedTime('');
+                            setSelectedWaitlistTimes([]);
+                            setIsWaitlistMode(false);
+                            setLastAppointment(null);
+                        }}
+                    />
+                )}
+
+                {/* Footer Info */}
+                <footer style={{ marginTop: 'var(--space-12)', textAlign: 'center', borderTop: '1px solid var(--border-color)', paddingTop: 'var(--space-6)' }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
+                        Platforma Mundësuar nga <a href="#" style={{ color: 'var(--color-primary-400)', textDecoration: 'none', fontWeight: 'bold' }}>Vjen</a>
+                    </p>
+                </footer>
+            </div>
         </div>
     );
 }

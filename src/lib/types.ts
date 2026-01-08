@@ -9,9 +9,10 @@ export interface Business {
     email: string;
     description?: string;
     uniqueLink: string;
+    urlLocked?: boolean;
 }
 
-export interface Physiotherapist {
+export interface Specialist {
     id: string;
     businessId: string;
     name: string;
@@ -41,7 +42,7 @@ export interface TimeSlot {
 export interface Appointment {
     id: string;
     businessId: string;
-    physiotherapistId: string;
+    specialistId: string;
     clientName: string;
     clientPhone: string;
     clientEmail?: string;
@@ -49,8 +50,13 @@ export interface Appointment {
     time: string; // HH:MM format
     duration: number; // in minutes
     status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+    verificationMethod: 'whatsapp' | 'sms';
     notes?: string;
     createdAt: string;
+    recurring?: {
+        type: 'weekly' | 'biweekly' | 'monthly';
+        parentId?: string; // ID of the first appointment in the series
+    };
 }
 
 export interface BookingFormData {
@@ -60,7 +66,9 @@ export interface BookingFormData {
     date: string;
     time: string;
     duration: number;
+    verificationMethod: 'whatsapp' | 'sms';
     notes?: string;
+    recurringType?: 'none' | 'weekly' | 'biweekly' | 'monthly';
 }
 
 export interface DashboardStats {
@@ -68,4 +76,46 @@ export interface DashboardStats {
     weekAppointments: number;
     totalClients: number;
     upcomingAppointments: Appointment[];
+}
+
+export interface Notification {
+    id: string;
+    businessId: string;
+    type: 'new_appointment' | 'cancellation' | 'confirmation' | 'reminder_sent' | 'system';
+    title: string;
+    message: string;
+    read: boolean;
+    createdAt: string;
+    relatedId?: string; // appointment ID usually
+}
+
+export interface AvailabilityOverride {
+    id: string;
+    businessId: string;
+    date: string; // YYYY-MM-DD
+    isOff: boolean;
+    startTime: string;
+    endTime: string;
+}
+
+export interface BlockedSlot {
+    id: string;
+    businessId: string;
+    date: string; // YYYY-MM-DD
+    startTime: string; // HH:MM
+    endTime: string; // HH:MM
+    reason?: string;
+    createdAt: string;
+}
+export interface WaitlistEntry {
+    id: string;
+    businessId: string;
+    clientName: string;
+    clientPhone: string;
+    clientEmail?: string;
+    preferredDates: string[]; // YYYY-MM-DD
+    preferredTimes: string[]; // HH:MM
+    status: 'pending' | 'notified' | 'assigned' | 'cancelled';
+    notes?: string;
+    createdAt: string;
 }

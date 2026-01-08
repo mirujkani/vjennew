@@ -1,13 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { getBusiness } from '@/lib/store';
+import { Business } from '@/lib/types';
 
 const navItems = [
     {
         href: '/dashboard',
-        label: 'Overview',
+        label: 'Pasqyra',
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="7" height="7" />
@@ -19,7 +21,7 @@ const navItems = [
     },
     {
         href: '/dashboard/appointments',
-        label: 'Appointments',
+        label: 'Terminet',
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -31,7 +33,7 @@ const navItems = [
     },
     {
         href: '/dashboard/availability',
-        label: 'Availability',
+        label: 'Orari',
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10" />
@@ -41,7 +43,7 @@ const navItems = [
     },
     {
         href: '/dashboard/settings',
-        label: 'Settings',
+        label: 'Konfigurimet',
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="3" />
@@ -57,7 +59,19 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [business, setBusiness] = useState<Business | null>(null);
     const pathname = usePathname();
+
+    useEffect(() => {
+        getBusiness().then(setBusiness).catch(console.error);
+    }, []);
+
+    const copyBookingLink = () => {
+        if (business) {
+            const link = `${window.location.origin}/${business.uniqueLink}`;
+            navigator.clipboard.writeText(link);
+        }
+    };
 
     return (
         <div className="dashboard-layout">
@@ -91,50 +105,54 @@ export default function DashboardLayout({
                 </nav>
 
                 {/* Booking Link */}
-                <div style={{
-                    marginTop: 'auto',
-                    padding: 'var(--space-4)',
-                    background: 'var(--bg-glass)',
-                    borderRadius: 'var(--radius-lg)',
-                    border: '1px solid var(--border-color)',
-                }}>
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: 'var(--space-2)' }}>
-                        Your Booking Link
-                    </div>
+                {business && (
                     <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--space-2)',
-                        background: 'var(--bg-tertiary)',
-                        padding: 'var(--space-2) var(--space-3)',
-                        borderRadius: 'var(--radius-md)',
-                        marginBottom: 'var(--space-3)',
+                        marginTop: 'auto',
+                        padding: 'var(--space-4)',
+                        background: 'var(--bg-glass)',
+                        borderRadius: 'var(--radius-lg)',
+                        border: '1px solid var(--border-color)',
                     }}>
-                        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
-                            v.app/physio123
-                        </span>
-                        <button
-                            className="btn btn-ghost btn-sm"
-                            onClick={() => {
-                                navigator.clipboard.writeText('https://v.app/physio123');
-                            }}
-                            title="Copy link"
-                        >
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: 'var(--space-2)' }}>
+                            Linku juaj i rezervimeve
+                        </div>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--space-2)',
+                            background: 'var(--bg-tertiary)',
+                            padding: 'var(--space-2) var(--space-3)',
+                            borderRadius: 'var(--radius-md)',
+                            marginBottom: 'var(--space-3)',
+                        }}>
+                            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                                /{business.uniqueLink}
+                            </span>
+                            <button
+                                className="btn btn-ghost btn-sm"
+                                onClick={copyBookingLink}
+                                title="Copy link"
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                                </svg>
+                            </button>
+                        </div>
+                        <Link href={`/${business.uniqueLink}`} className="btn btn-primary btn-sm" style={{ width: '100%', marginBottom: 'var(--space-3)' }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                                <polyline points="15,3 21,3 21,9" />
+                                <line x1="10" y1="14" x2="21" y2="3" />
                             </svg>
-                        </button>
+                            Shiko Faqen
+                        </Link>
+
+                        <div style={{ paddingTop: 'var(--space-3)', borderTop: '1px solid var(--border-color)' }}>
+                            <SignOutButton />
+                        </div>
                     </div>
-                    <Link href="/physio123" className="btn btn-primary btn-sm" style={{ width: '100%' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-                            <polyline points="15,3 21,3 21,9" />
-                            <line x1="10" y1="14" x2="21" y2="3" />
-                        </svg>
-                        View Booking Page
-                    </Link>
-                </div>
+                )}
             </aside>
 
             {/* Main Content */}
@@ -158,22 +176,26 @@ export default function DashboardLayout({
                         </svg>
                     </button>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                        <span style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                            PhysioWell Clinic
-                        </span>
-                        <div style={{
-                            width: '36px',
-                            height: '36px',
-                            background: 'var(--gradient-accent)',
-                            borderRadius: 'var(--radius-full)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}>
-                            <span style={{ color: 'white', fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)' }}>
-                                P
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginLeft: 'auto' }}>
+                        <NotificationBell />
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', paddingLeft: 'var(--space-3)', borderLeft: '1px solid var(--border-color)' }}>
+                            <span style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', display: 'none' }}>
+                                {business?.name || 'Loading...'}
                             </span>
+                            <div style={{
+                                width: '36px',
+                                height: '36px',
+                                background: 'var(--gradient-accent)',
+                                borderRadius: 'var(--radius-full)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                                <span style={{ color: 'white', fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)' }}>
+                                    {business?.name?.charAt(0) || 'V'}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </header>
@@ -181,5 +203,27 @@ export default function DashboardLayout({
                 {children}
             </div>
         </div>
+    );
+}
+
+// Helper components moved inside/imported
+import { useAuth } from '@/context/AuthContext';
+import NotificationBell from '@/components/dashboard/NotificationBell';
+
+function SignOutButton() {
+    const { signOut } = useAuth();
+    return (
+        <button
+            onClick={signOut}
+            className="btn btn-ghost btn-sm"
+            style={{ width: '100%', justifyContent: 'flex-start', color: 'var(--text-secondary)' }}
+        >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 'var(--space-2)' }}>
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            Dilni
+        </button>
     );
 }

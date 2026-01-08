@@ -1,5 +1,5 @@
 // WhatsApp Business API integration structure
-// This is a mock implementation that can be replaced with actual WhatsApp Business API
+// This provides the structure for WhatsApp integration
 
 export interface WhatsAppMessage {
     to: string;
@@ -11,13 +11,6 @@ export interface WhatsAppCallRequest {
     to: string;
     message: string;
 }
-
-// Configuration for WhatsApp Business API
-export const whatsappConfig = {
-    apiUrl: process.env.WHATSAPP_API_URL || 'https://api.whatsapp.com/v1',
-    accessToken: process.env.WHATSAPP_ACCESS_TOKEN || '',
-    phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || '',
-};
 
 // Message templates
 export const messageTemplates = {
@@ -84,15 +77,14 @@ Thank you for your understanding.
 `.trim(),
 };
 
-// Send a WhatsApp message (mock implementation)
+// Send a WhatsApp message (mock implementation for demo)
 export async function sendWhatsAppMessage(
     phoneNumber: string,
     message: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
-    // In a real implementation, this would call the WhatsApp Business API
+    // In production, this would call the WhatsApp Business API
     console.log(`[WhatsApp] Sending message to ${phoneNumber}:`, message);
 
-    // Simulate API call
     return new Promise((resolve) => {
         setTimeout(() => {
             resolve({
@@ -103,15 +95,13 @@ export async function sendWhatsAppMessage(
     });
 }
 
-// Initiate a WhatsApp voice call (mock implementation)
+// Initiate a WhatsApp voice call (mock implementation for demo)
 export async function initiateWhatsAppCall(
     phoneNumber: string,
     voiceMessage: string
 ): Promise<{ success: boolean; callId?: string; error?: string }> {
-    // In a real implementation, this would use WhatsApp's voice call API
     console.log(`[WhatsApp] Initiating call to ${phoneNumber}:`, voiceMessage);
 
-    // Simulate API call
     return new Promise((resolve) => {
         setTimeout(() => {
             resolve({
