@@ -1,5 +1,14 @@
 // Core types for the Vjen appointment scheduling platform
 
+export interface Service {
+    id: string;
+    businessId: string;
+    name: string;
+    price: number;
+    duration?: number; // in minutes
+    description?: string;
+}
+
 export interface Business {
     id: string;
     name: string;
@@ -10,6 +19,8 @@ export interface Business {
     description?: string;
     uniqueLink: string;
     urlLocked?: boolean;
+    showServices?: boolean;
+    services?: Service[];
 }
 
 export interface Specialist {
@@ -57,6 +68,9 @@ export interface Appointment {
         type: 'weekly' | 'biweekly' | 'monthly';
         parentId?: string; // ID of the first appointment in the series
     };
+    serviceId?: string;
+    serviceName?: string;
+    servicePrice?: number;
 }
 
 export interface BookingFormData {
@@ -69,6 +83,9 @@ export interface BookingFormData {
     verificationMethod: 'whatsapp' | 'sms';
     notes?: string;
     recurringType?: 'none' | 'weekly' | 'biweekly' | 'monthly';
+    serviceId?: string;
+    serviceName?: string;
+    servicePrice?: number;
 }
 
 export interface DashboardStats {

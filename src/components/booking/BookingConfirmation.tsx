@@ -13,6 +13,8 @@ interface BookingConfirmationProps {
     onCancel: () => void;
     isSubmitting?: boolean;
     isWaitlist?: boolean;
+    serviceName?: string;
+    servicePrice?: number;
 }
 
 export default function BookingConfirmation({
@@ -25,6 +27,8 @@ export default function BookingConfirmation({
     onCancel,
     isSubmitting = false,
     isWaitlist = false,
+    serviceName,
+    servicePrice,
 }: BookingConfirmationProps) {
     const [formData, setFormData] = useState({
         name: '',
@@ -150,6 +154,23 @@ export default function BookingConfirmation({
                                     {formatTime(time)} {duration > 0 ? `(${duration} min)` : ''}
                                 </span>
                             </div>
+                            {serviceName && (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'var(--space-2)', paddingTop: 'var(--space-2)', borderTop: '1px dashed var(--border-color)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-400)" strokeWidth="2">
+                                            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                        </svg>
+                                        <span style={{ color: 'var(--text-primary)', fontWeight: 'var(--font-medium)' }}>
+                                            {serviceName}
+                                        </span>
+                                    </div>
+                                    {servicePrice !== undefined && (
+                                        <span style={{ fontWeight: 'var(--font-bold)', color: 'var(--color-primary-500)' }}>
+                                            €{servicePrice.toFixed(2)}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 

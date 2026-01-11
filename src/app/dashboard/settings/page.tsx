@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getBusiness, updateBusiness, getSpecialists, addSpecialist, deleteSpecialist } from '@/lib/store';
-import { Business, Specialist } from '@/lib/types';
+import { Business, Specialist, Service } from '@/lib/types';
 import ImageUpload from '@/components/ui/ImageUpload';
 
 export default function SettingsPage() {
@@ -14,6 +14,8 @@ export default function SettingsPage() {
     const [showAddSpecialist, setShowAddSpecialist] = useState(false);
     const [newSpecialist, setNewSpecialist] = useState<{ name: string, title: string, bio: string, specialties: string, avatar?: string }>({ name: '', title: '', bio: '', specialties: '', avatar: '' });
     const [isLoading, setIsLoading] = useState(true);
+    const [showAddService, setShowAddService] = useState(false);
+    const [newService, setNewService] = useState<{ name: string, price: string, description: string }>({ name: '', price: '', description: '' });
 
     const loadData = async () => {
         try {
@@ -99,6 +101,31 @@ export default function SettingsPage() {
                 alert('Dështoi fshirja e specialistit');
             }
         }
+    };
+
+    const handleAddService = () => {
+        if (!business || !newService.name || !newService.price) return;
+        const service: Service = {
+            id: Date.now().toString(),
+            businessId: business.id,
+            name: newService.name,
+            price: parseFloat(newService.price),
+            description: newService.description || undefined,
+        };
+        setBusiness({
+            ...business,
+            services: [...(business.services || []), service],
+        });
+        setNewService({ name: '', price: '', description: '' });
+        setShowAddService(false);
+    };
+
+    const handleDeleteService = (id: string) => {
+        if (!business) return;
+        setBusiness({
+            ...business,
+            services: (business.services || []).filter(s => s.id !== id),
+        });
     };
 
     if (isLoading || !business) {
@@ -294,6 +321,146 @@ export default function SettingsPage() {
                         placeholder="Përshkruani biznesin tuaj..."
                     />
                 </div>
+            </div>
+
+            {/* Services Toggle & Management */}
+            <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 'var(--space-4)',
+                }}>
+                    <div>
+                        <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Shërbimet dhe Çmimet</h2>
+                        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 'var(--space-1) 0 0' }}>
+                            Aktivizoni për të shfaqur shërbimet në faqen e rezervimeve
+                        </p>
+                    </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}>
+                        <input
+                            type="checkbox"
+                            checked={business.showServices || false}
+                            onChange={(e) => setBusiness({ ...business, showServices: e.target.checked })}
+                            style={{ width: '20px', height: '20px', accentColor: 'var(--color-primary-500)' }}
+                        />
+                        <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>
+                            {business.showServices ? 'Aktiv' : 'Joaktiv'}
+                        </span>
+                    </label>
+                </div>
+
+                {business.showServices && (
+                    <>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
+                            {(business.services || []).length === 0 ? (
+                                <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', textAlign: 'center', padding: 'var(--space-4)' }}>
+                                    Nuk keni asnjë shërbim të shtuar. Shtoni shërbimet tuaja më poshtë.
+                                </p>
+                            ) : (
+                                (business.services || []).map((service) => (
+                                    <div key={service.id} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: 'var(--space-3) var(--space-4)',
+                                        background: 'var(--bg-glass)',
+                                        borderRadius: 'var(--radius-lg)',
+                                        border: '1px solid var(--border-color)',
+                                    }}>
+                                        <div>
+                                            <div style={{ fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)' }}>
+                                                {service.name}
+                                            </div>
+                                            {service.description && (
+                                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                                                    {service.description}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                            <span style={{ fontWeight: 'var(--font-bold)', color: 'var(--color-primary-500)', fontSize: 'var(--text-lg)' }}>
+                                                €{service.price.toFixed(2)}
+                                            </span>
+                                            <button
+                                                className="btn btn-ghost btn-sm"
+                                                onClick={() => handleDeleteService(service.id)}
+                                                style={{ color: 'var(--color-error-500)' }}
+                                            >
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <polyline points="3,6 5,6 21,6" />
+                                                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        <button className="btn btn-secondary btn-sm" onClick={() => setShowAddService(true)}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            Shto Shërbim
+                        </button>
+                    </>
+                )}
+
+                {/* Add Service Modal */}
+                {showAddService && (
+                    <div className="modal-overlay" onClick={() => setShowAddService(false)}>
+                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 style={{ margin: 0 }}>Shto Shërbim</h3>
+                                <button className="btn btn-ghost btn-icon" onClick={() => setShowAddService(false)}>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="form-group">
+                                    <label className="form-label">Emri i Shërbimit *</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={newService.name}
+                                        onChange={(e) => setNewService({ ...newService, name: e.target.value })}
+                                        placeholder="p.sh. Prerje Flokësh"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Çmimi (€) *</label>
+                                    <input
+                                        type="number"
+                                        className="form-input"
+                                        value={newService.price}
+                                        onChange={(e) => setNewService({ ...newService, price: e.target.value })}
+                                        placeholder="25.00"
+                                        min="0"
+                                        step="0.01"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Përshkrimi (opsional)</label>
+                                    <textarea
+                                        className="form-input form-textarea"
+                                        value={newService.description}
+                                        onChange={(e) => setNewService({ ...newService, description: e.target.value })}
+                                        placeholder="Përshkrimi i shkurtër i shërbimit..."
+                                        rows={2}
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn btn-secondary" onClick={() => setShowAddService(false)}>Anulo</button>
+                                <button className="btn btn-primary" onClick={handleAddService}>Shto</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Specialists */}

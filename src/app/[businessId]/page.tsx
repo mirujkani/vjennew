@@ -7,7 +7,7 @@ import CalendarPicker from '@/components/booking/CalendarPicker';
 import TimeSlotGrid from '@/components/booking/TimeSlotGrid';
 import BookingConfirmation from '@/components/booking/BookingConfirmation';
 import BookingSuccess from '@/components/booking/BookingSuccess';
-import { BookingFormData, Specialist, Business, Availability, WaitlistEntry } from '@/lib/types';
+import { BookingFormData, Specialist, Business, Availability, WaitlistEntry, Service } from '@/lib/types';
 import { createWaitlistEntry, getBusinessByLink, getSpecialists, getAvailability, generateTimeSlots, createAppointment } from '@/lib/store';
 
 export default function BookingPage() {
@@ -27,6 +27,7 @@ export default function BookingPage() {
     const [lastAppointment, setLastAppointment] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedService, setSelectedService] = useState<Service | null>(null);
 
     useEffect(() => {
         const loadInitialData = async () => {
@@ -94,6 +95,9 @@ export default function BookingPage() {
                     date: selectedDate,
                     time: selectedTime,
                     duration: availability?.defaultDuration || 30,
+                    serviceId: selectedService?.id,
+                    serviceName: selectedService?.name,
+                    servicePrice: selectedService?.price,
                 },
                 selectedSpecialist.id,
                 'pending',
@@ -217,6 +221,46 @@ export default function BookingPage() {
                     </div>
                 )}
 
+                {/* Service Selection */}
+                {business.showServices && (business.services || []).length > 0 && step === 'selection' && (
+                    <div style={{ marginBottom: 'var(--space-6)' }}>
+                        <h3 style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-3)' }}>Zgjidhni Shêrbimin:</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                            {(business.services || []).map(service => (
+                                <button
+                                    key={service.id}
+                                    onClick={() => setSelectedService(selectedService?.id === service.id ? null : service)}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: 'var(--space-3) var(--space-4)',
+                                        borderRadius: 'var(--radius-lg)',
+                                        border: selectedService?.id === service.id ? '2px solid var(--color-primary-500)' : '1px solid var(--border-color)',
+                                        background: selectedService?.id === service.id ? 'rgba(20, 184, 166, 0.08)' : 'var(--bg-glass)',
+                                        cursor: 'pointer',
+                                        textAlign: 'left',
+                                    }}
+                                >
+                                    <div>
+                                        <div style={{ fontWeight: 'var(--font-medium)', color: 'var(--text-primary)' }}>
+                                            {service.name}
+                                        </div>
+                                        {service.description && (
+                                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                                                {service.description}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span style={{ fontWeight: 'var(--font-bold)', color: 'var(--color-primary-500)', fontSize: 'var(--text-lg)' }}>
+                                        €{service.price.toFixed(2)}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Main Content Areas */}
                 {step === 'selection' && (
                     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
@@ -309,6 +353,8 @@ export default function BookingPage() {
                         onConfirm={handleConfirm}
                         onCancel={() => setStep('selection')}
                         isSubmitting={isSubmitting}
+                        serviceName={selectedService?.name}
+                        servicePrice={selectedService?.price}
                     />
                 )}
 

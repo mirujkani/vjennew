@@ -607,6 +607,19 @@ export default function AppointmentsPage() {
                                                                 >
                                                                     {getStatusLabel(apt.status)}
                                                                 </span>
+                                                                {apt.serviceName && (
+                                                                    <span
+                                                                        className="badge"
+                                                                        style={{
+                                                                            background: 'rgba(20, 184, 166, 0.1)',
+                                                                            color: 'var(--color-primary-500)',
+                                                                            fontWeight: 'var(--font-medium)',
+                                                                            border: '1px solid rgba(20, 184, 166, 0.3)',
+                                                                        }}
+                                                                    >
+                                                                        {apt.serviceName} {apt.servicePrice ? `• €${apt.servicePrice.toFixed(2)}` : ''}
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                             <div style={{
                                                                 display: 'flex',

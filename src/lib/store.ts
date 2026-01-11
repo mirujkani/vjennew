@@ -16,7 +16,7 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from './firebase';
-import { Business, Specialist, Availability, Appointment, BookingFormData, Notification, AvailabilityOverride, BlockedSlot, WaitlistEntry } from './types';
+import { Business, Specialist, Availability, Appointment, BookingFormData, Notification, AvailabilityOverride, BlockedSlot, WaitlistEntry, Service } from './types';
 
 // Collection names
 const COLLECTIONS = {
@@ -41,6 +41,8 @@ const defaultBusiness: Business = {
     description: 'Shërbime profesionale për nevojat tuaja.',
     uniqueLink: 'biznesi-im',
     urlLocked: false,
+    showServices: false,
+    services: [],
 };
 
 const defaultSpecialist: Omit<Specialist, 'id'> = {
@@ -372,6 +374,9 @@ export async function createAppointment(
             verificationMethod: data.verificationMethod,
             notes: data.notes || null,
             createdAt: new Date().toISOString(),
+            serviceId: data.serviceId || null,
+            serviceName: data.serviceName || null,
+            servicePrice: data.servicePrice || null,
         };
 
         if (recurringType) {
