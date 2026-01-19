@@ -52,7 +52,7 @@ export default function SettingsPage() {
             setTimeout(() => setSaved(false), 3000);
         } catch (error) {
             console.error('Error saving business:', error);
-            alert('Dështoi ruajtja e cilësimeve');
+            alert('Failed to save settings');
         } finally {
             setIsSaving(false);
         }
@@ -82,50 +82,65 @@ export default function SettingsPage() {
                 setShowAddSpecialist(false);
             } catch (error) {
                 console.error('Error adding specialist:', error);
-                alert('Dështoi shtimi i specialistit');
+                alert('Failed to add specialist');
             }
         }
     };
 
     const handleDeleteSpecialist = async (id: string) => {
         if (specialists.length <= 1) {
-            alert('Duhet të keni të paktën një specialist.');
+            alert('You must have at least one specialist.');
             return;
         }
-        if (confirm('A jeni të sigurt që doni të fshini këtë specialist?')) {
+        if (confirm('Are you sure you want to delete this specialist?')) {
             try {
                 await deleteSpecialist(id);
                 await loadData();
             } catch (error) {
                 console.error('Error deleting specialist:', error);
-                alert('Dështoi fshirja e specialistit');
+                alert('Failed to delete specialist');
             }
         }
     };
 
-    const handleAddService = () => {
+    const handleAddService = async () => {
         if (!business || !newService.name || !newService.price) return;
         const service: Service = {
             id: Date.now().toString(),
             businessId: business.id,
             name: newService.name,
             price: parseFloat(newService.price),
-            description: newService.description || undefined,
+            ...(newService.description ? { description: newService.description } : {}),
         };
-        setBusiness({
-            ...business,
-            services: [...(business.services || []), service],
-        });
-        setNewService({ name: '', price: '', description: '' });
-        setShowAddService(false);
+
+        const updatedServices = [...(business.services || []), service];
+        const updatedBusiness = { ...business, services: updatedServices };
+
+        try {
+            setBusiness(updatedBusiness); // Optimistic update
+            await updateBusiness({ services: updatedServices });
+            setNewService({ name: '', price: '', description: '' });
+            setShowAddService(false);
+        } catch (error) {
+            console.error('Error adding service:', error);
+            alert('Failed to add service');
+            // Revert on error would be ideal but for now we just alert
+        }
     };
 
-    const handleDeleteService = (id: string) => {
+    const handleDeleteService = async (id: string) => {
         if (!business) return;
-        setBusiness({
-            ...business,
-            services: (business.services || []).filter(s => s.id !== id),
-        });
+
+        const updatedServices = (business.services || []).filter(s => s.id !== id);
+        const updatedBusiness = { ...business, services: updatedServices };
+
+        try {
+            setBusiness(updatedBusiness); // Optimistic update
+            await updateBusiness({ services: updatedServices });
+        } catch (error) {
+            console.error('Error deleting service:', error);
+            alert('Failed to delete service');
+        }
     };
 
     if (isLoading || !business) {
@@ -136,18 +151,44 @@ export default function SettingsPage() {
         );
     }
 
+
+    const toggleServices = async () => {
+        if (!business) return;
+        const newValue = !business.showServices;
+        setBusiness({ ...business, showServices: newValue });
+        try {
+            await updateBusiness({ showServices: newValue });
+        } catch (error) {
+            console.error('Error updating showServices:', error);
+            // Revert on error
+            setBusiness({ ...business, showServices: !newValue });
+        }
+    };
+
+    const toggleNotificationSound = async () => {
+        if (!business) return;
+        const newValue = !business.notificationSound;
+        setBusiness({ ...business, notificationSound: newValue });
+        try {
+            await updateBusiness({ notificationSound: newValue });
+        } catch (error) {
+            console.error('Error updating notificationSound:', error);
+            setBusiness({ ...business, notificationSound: !newValue });
+        }
+    };
+
     return (
         <div>
-            <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-6)' }}>Cilësimet e Biznesit</h1>
+            <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-6)' }}>Business Settings</h1>
 
             {/* Booking Link */}
             <div className="card" style={{
                 marginBottom: 'var(--space-6)',
                 background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%)',
             }}>
-                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>Linku i Rezervimeve</h2>
+                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>Booking Link</h2>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
-                    Ndani këtë link me klientët tuaj që të mund të rezervojnë termine.
+                    Share this link with your clients so they can book appointments.
                 </p>
 
                 <div style={{
@@ -181,7 +222,7 @@ export default function SettingsPage() {
                                     <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
                                     <polyline points="22,4 12,14.01 9,11.01" />
                                 </svg>
-                                U kopjua!
+                                Copied!
                             </>
                         ) : (
                             <>
@@ -189,7 +230,7 @@ export default function SettingsPage() {
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                                     <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                                 </svg>
-                                Kopjo Linkun
+                                Copy Link
                             </>
                         )}
                     </button>
@@ -197,8 +238,8 @@ export default function SettingsPage() {
 
                 <div className="form-group" style={{ margin: 0, maxWidth: '400px' }}>
                     <label className="form-label" htmlFor="uniqueLink">
-                        Përshtatni Linkun Unik
-                        {business.urlLocked && <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>(I kyçur)</span>}
+                        Customize Unique Link
+                        {business.urlLocked && <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>(Locked)</span>}
                     </label>
                     <input
                         id="uniqueLink"
@@ -206,13 +247,13 @@ export default function SettingsPage() {
                         className="form-input"
                         value={business.uniqueLink}
                         onChange={(e) => !business.urlLocked && setBusiness({ ...business, uniqueLink: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
-                        placeholder="linku-juaj-unik"
+                        placeholder="your-unique-link"
                         disabled={business.urlLocked}
                         style={business.urlLocked ? { opacity: 0.7, cursor: 'not-allowed' } : {}}
                     />
                     {!business.urlLocked && business.uniqueLink !== 'myclinic' && (
                         <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-warning-500)', marginTop: 'var(--space-2)' }}>
-                            Kujdes: Pas ruajtjes, ky link do të kyçet dhe nuk mund të ndryshohet më.
+                            Warning: After saving, this link will be locked and cannot be changed.
                         </p>
                     )}
                 </div>
@@ -226,28 +267,13 @@ export default function SettingsPage() {
                     justifyContent: 'space-between',
                     marginBottom: 'var(--space-6)',
                 }}>
-                    <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Informacionet e Biznesit</h2>
+                    <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Business Information</h2>
                     <button
                         className="btn btn-primary"
                         onClick={handleSave}
                         disabled={isSaving}
                     >
-                        {isSaving ? (
-                            <>
-                                <span className="spinner" style={{ width: '16px', height: '16px' }} />
-                                Duke ruajtur...
-                            </>
-                        ) : saved ? (
-                            <>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
-                                    <polyline points="22,4 12,14.01 9,11.01" />
-                                </svg>
-                                U ruajt!
-                            </>
-                        ) : (
-                            'Ruaj Ndryshimet'
-                        )}
+                        {isSaving ? 'Saving...' : (saved ? 'Saved!' : 'Save Changes')}
                     </button>
                 </div>
 
@@ -258,7 +284,7 @@ export default function SettingsPage() {
                 }}>
                     <div style={{ gridColumn: '1 / -1' }}>
                         <ImageUpload
-                            label="Logo e Biznesit"
+                            label="Business Logo"
                             currentImage={business.logo}
                             onImageUploaded={(url) => setBusiness({ ...business, logo: url })}
                             directory="business-logos"
@@ -266,9 +292,9 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label" htmlFor="businessName">Emri i Biznesit</label>
+                        <label className="form-label" htmlFor="name">Business Name</label>
                         <input
-                            id="businessName"
+                            id="name"
                             type="text"
                             className="form-input"
                             value={business.name}
@@ -277,7 +303,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label" htmlFor="phone">Numri i Telefonit</label>
+                        <label className="form-label" htmlFor="phone">Phone Number</label>
                         <input
                             id="phone"
                             type="tel"
@@ -288,18 +314,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label" htmlFor="email">Email Adresa</label>
-                        <input
-                            id="email"
-                            type="email"
-                            className="form-input"
-                            value={business.email}
-                            onChange={(e) => setBusiness({ ...business, email: e.target.value })}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="address">Adresa</label>
+                        <label className="form-label" htmlFor="address">Address</label>
                         <input
                             id="address"
                             type="text"
@@ -311,14 +326,14 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="form-group" style={{ marginTop: 'var(--space-4)' }}>
-                    <label className="form-label" htmlFor="description">Përshkrimi i Biznesit</label>
+                    <label className="form-label" htmlFor="description">Description</label>
                     <textarea
                         id="description"
                         className="form-input form-textarea"
                         value={business.description}
                         onChange={(e) => setBusiness({ ...business, description: e.target.value })}
                         rows={3}
-                        placeholder="Përshkruani biznesin tuaj..."
+                        placeholder="Describe your business..."
                     />
                 </div>
             </div>
@@ -332,22 +347,36 @@ export default function SettingsPage() {
                     marginBottom: 'var(--space-4)',
                 }}>
                     <div>
-                        <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Shërbimet dhe Çmimet</h2>
+                        <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Services and Pricing</h2>
                         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 'var(--space-1) 0 0' }}>
-                            Aktivizoni për të shfaqur shërbimet në faqen e rezervimeve
+                            Enable to display services on your booking page
                         </p>
                     </div>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}>
-                        <input
-                            type="checkbox"
-                            checked={business.showServices || false}
-                            onChange={(e) => setBusiness({ ...business, showServices: e.target.checked })}
-                            style={{ width: '20px', height: '20px', accentColor: 'var(--color-primary-500)' }}
-                        />
-                        <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>
-                            {business.showServices ? 'Aktiv' : 'Joaktiv'}
-                        </span>
-                    </label>
+                    <div
+                        onClick={toggleServices}
+                        style={{
+                            cursor: 'pointer',
+                            width: '44px',
+                            height: '24px',
+                            borderRadius: '999px',
+                            background: business.showServices ? 'var(--color-primary-500)' : 'var(--bg-tertiary)',
+                            position: 'relative',
+                            transition: 'background 0.2s ease',
+                            border: `1px solid ${business.showServices ? 'var(--color-primary-500)' : 'var(--border-color)'}`
+                        }}
+                    >
+                        <div style={{
+                            position: 'absolute',
+                            top: '2px',
+                            left: business.showServices ? '22px' : '2px',
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            background: 'white',
+                            transition: 'left 0.2s ease',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                        }} />
+                    </div>
                 </div>
 
                 {business.showServices && (
@@ -355,7 +384,7 @@ export default function SettingsPage() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
                             {(business.services || []).length === 0 ? (
                                 <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', textAlign: 'center', padding: 'var(--space-4)' }}>
-                                    Nuk keni asnjë shërbim të shtuar. Shtoni shërbimet tuaja më poshtë.
+                                    You have no services added. Add your services below.
                                 </p>
                             ) : (
                                 (business.services || []).map((service) => (
@@ -402,7 +431,7 @@ export default function SettingsPage() {
                                 <line x1="12" y1="5" x2="12" y2="19" />
                                 <line x1="5" y1="12" x2="19" y2="12" />
                             </svg>
-                            Shto Shërbim
+                            Add Service
                         </button>
                     </>
                 )}
@@ -412,7 +441,7 @@ export default function SettingsPage() {
                     <div className="modal-overlay" onClick={() => setShowAddService(false)}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
-                                <h3 style={{ margin: 0 }}>Shto Shërbim</h3>
+                                <h3 style={{ margin: 0 }}>Add Service</h3>
                                 <button className="btn btn-ghost btn-icon" onClick={() => setShowAddService(false)}>
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -422,17 +451,17 @@ export default function SettingsPage() {
                             </div>
                             <div className="modal-body">
                                 <div className="form-group">
-                                    <label className="form-label">Emri i Shërbimit *</label>
+                                    <label className="form-label">Service Name *</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={newService.name}
                                         onChange={(e) => setNewService({ ...newService, name: e.target.value })}
-                                        placeholder="p.sh. Prerje Flokësh"
+                                        placeholder="e.g. Haircut"
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Çmimi (€) *</label>
+                                    <label className="form-label">Price (€) *</label>
                                     <input
                                         type="number"
                                         className="form-input"
@@ -444,23 +473,64 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Përshkrimi (opsional)</label>
+                                    <label className="form-label">Description (optional)</label>
                                     <textarea
                                         className="form-input form-textarea"
                                         value={newService.description}
                                         onChange={(e) => setNewService({ ...newService, description: e.target.value })}
-                                        placeholder="Përshkrimi i shkurtër i shërbimit..."
+                                        placeholder="Brief description of the service..."
                                         rows={2}
                                     />
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button className="btn btn-secondary" onClick={() => setShowAddService(false)}>Anulo</button>
-                                <button className="btn btn-primary" onClick={handleAddService}>Shto</button>
+                                <button className="btn btn-secondary" onClick={() => setShowAddService(false)}>Cancel</button>
+                                <button className="btn btn-primary" onClick={handleAddService}>Add</button>
                             </div>
                         </div>
                     </div>
                 )}
+            </div>
+
+            {/* Notification Settings */}
+            <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                }}>
+                    <div>
+                        <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Notifications</h2>
+                        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 'var(--space-1) 0 0' }}>
+                            Enable sound for new notifications
+                        </p>
+                    </div>
+                    <div
+                        onClick={toggleNotificationSound}
+                        style={{
+                            cursor: 'pointer',
+                            width: '44px',
+                            height: '24px',
+                            borderRadius: '999px',
+                            background: business.notificationSound ? 'var(--color-primary-500)' : 'var(--bg-tertiary)',
+                            position: 'relative',
+                            transition: 'background 0.2s ease',
+                            border: `1px solid ${business.notificationSound ? 'var(--color-primary-500)' : 'var(--border-color)'}`
+                        }}
+                    >
+                        <div style={{
+                            position: 'absolute',
+                            top: '2px',
+                            left: business.notificationSound ? '22px' : '2px',
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            background: 'white',
+                            transition: 'left 0.2s ease',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                        }} />
+                    </div>
+                </div>
             </div>
 
             {/* Specialists */}
@@ -471,13 +541,13 @@ export default function SettingsPage() {
                     justifyContent: 'space-between',
                     marginBottom: 'var(--space-4)',
                 }}>
-                    <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Specialistët</h2>
+                    <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Specialists</h2>
                     <button className="btn btn-secondary btn-sm" onClick={() => setShowAddSpecialist(true)}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <line x1="12" y1="5" x2="12" y2="19" />
                             <line x1="5" y1="12" x2="19" y2="12" />
                         </svg>
-                        Shto të ri
+                        Add New
                     </button>
                 </div>
 
@@ -533,7 +603,7 @@ export default function SettingsPage() {
                     <div className="modal-overlay" onClick={() => setShowAddSpecialist(false)}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
-                                <h3 style={{ margin: 0 }}>Shto Specialist</h3>
+                                <h3 style={{ margin: 0 }}>Add Specialist</h3>
                                 <button className="btn btn-ghost btn-icon" onClick={() => setShowAddSpecialist(false)}>
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -543,30 +613,30 @@ export default function SettingsPage() {
                             </div>
                             <div className="modal-body">
                                 <ImageUpload
-                                    label="Foto e Profilit"
+                                    label="Profile Photo"
                                     currentImage={newSpecialist.avatar}
                                     onImageUploaded={(url) => setNewSpecialist({ ...newSpecialist, avatar: url })}
                                     directory="specialist-avatars"
                                     circular={true}
                                 />
                                 <div className="form-group">
-                                    <label className="form-label">Emri *</label>
+                                    <label className="form-label">Name *</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={newSpecialist.name}
                                         onChange={(e) => setNewSpecialist({ ...newSpecialist, name: e.target.value })}
-                                        placeholder="Emri Mbiemri"
+                                        placeholder="Full Name"
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Titulli *</label>
+                                    <label className="form-label">Title *</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={newSpecialist.title}
                                         onChange={(e) => setNewSpecialist({ ...newSpecialist, title: e.target.value })}
-                                        placeholder="Kosmetologe, Parukier etj."
+                                        placeholder="Cosmetologist, Hairdresser, etc."
                                     />
                                 </div>
                                 <div className="form-group">
@@ -575,24 +645,24 @@ export default function SettingsPage() {
                                         className="form-input form-textarea"
                                         value={newSpecialist.bio}
                                         onChange={(e) => setNewSpecialist({ ...newSpecialist, bio: e.target.value })}
-                                        placeholder="Përshkrim i shkurtër..."
+                                        placeholder="Brief description..."
                                         rows={3}
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Shërbimet (të ndara me presje)</label>
+                                    <label className="form-label">Services (comma separated)</label>
                                     <input
                                         type="text"
                                         className="form-input"
                                         value={newSpecialist.specialties}
                                         onChange={(e) => setNewSpecialist({ ...newSpecialist, specialties: e.target.value })}
-                                        placeholder="Grim, Prerje Flokësh etj."
+                                        placeholder="Makeup, Haircut, etc."
                                     />
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button className="btn btn-secondary" onClick={() => setShowAddSpecialist(false)}>Anulo</button>
-                                <button className="btn btn-primary" onClick={handleAddSpecialist}>Shto</button>
+                                <button className="btn btn-secondary" onClick={() => setShowAddSpecialist(false)}>Cancel</button>
+                                <button className="btn btn-primary" onClick={handleAddSpecialist}>Add</button>
                             </div>
                         </div>
                     </div>

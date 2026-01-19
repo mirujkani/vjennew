@@ -21,6 +21,8 @@ export interface Business {
     urlLocked?: boolean;
     showServices?: boolean;
     services?: Service[];
+    notificationSound?: boolean;
+    onboardingCompleted?: boolean;
 }
 
 export interface Specialist {
@@ -68,6 +70,7 @@ export interface Appointment {
         type: 'weekly' | 'biweekly' | 'monthly';
         parentId?: string; // ID of the first appointment in the series
     };
+    specialistName?: string;
     serviceId?: string;
     serviceName?: string;
     servicePrice?: number;
@@ -83,6 +86,7 @@ export interface BookingFormData {
     verificationMethod: 'whatsapp' | 'sms';
     notes?: string;
     recurringType?: 'none' | 'weekly' | 'biweekly' | 'monthly';
+    specialistName?: string;
     serviceId?: string;
     serviceName?: string;
     servicePrice?: number;
@@ -118,6 +122,7 @@ export interface AvailabilityOverride {
 export interface BlockedSlot {
     id: string;
     businessId: string;
+    specialistId?: string;
     date: string; // YYYY-MM-DD
     startTime: string; // HH:MM
     endTime: string; // HH:MM

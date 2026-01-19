@@ -35,7 +35,7 @@ export default function DemoModal({ onClose }: DemoModalProps) {
             setTimeout(() => onClose(), 3000); // Close after 3 seconds
         } catch (err) {
             console.error('Error submitting demo request:', err);
-            setError('Ndodhi një gabim. Ju lutem provoni përsëri.');
+            setError('An error occurred. Please try again.');
             setIsSubmitting(false);
         }
     };
@@ -45,9 +45,9 @@ export default function DemoModal({ onClose }: DemoModalProps) {
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2 style={{ margin: 0, fontSize: 'var(--text-xl)' }}>
-                        {submitted ? 'Kërkesa u dërgua!' : 'Rezervoni një Demo'}
+                        {submitted ? 'Request Sent!' : 'Book a Demo'}
                     </h2>
-                    <button className="btn btn-ghost btn-icon" onClick={onClose} aria-label="Mbyll">
+                    <button className="btn btn-ghost btn-icon" onClick={onClose} aria-label="Close">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <line x1="18" y1="6" x2="6" y2="18" />
                             <line x1="6" y1="6" x2="18" y2="18" />
@@ -74,7 +74,7 @@ export default function DemoModal({ onClose }: DemoModalProps) {
                                 </svg>
                             </div>
                             <p>
-                                Faleminderit! Ne do t&apos;ju kontaktojmë së shpejti për të caktuar demon.
+                                Thank you! We will contact you soon to schedule your demo.
                             </p>
                         </div>
                     ) : (
@@ -87,7 +87,7 @@ export default function DemoModal({ onClose }: DemoModalProps) {
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                                 <div className="form-group" style={{ margin: 0 }}>
-                                    <label className="form-label" htmlFor="name">Emri *</label>
+                                    <label className="form-label" htmlFor="name">First Name *</label>
                                     <input
                                         id="name"
                                         type="text"
@@ -98,7 +98,7 @@ export default function DemoModal({ onClose }: DemoModalProps) {
                                     />
                                 </div>
                                 <div className="form-group" style={{ margin: 0 }}>
-                                    <label className="form-label" htmlFor="surname">Mbiemri *</label>
+                                    <label className="form-label" htmlFor="surname">Last Name *</label>
                                     <input
                                         id="surname"
                                         type="text"
@@ -111,7 +111,7 @@ export default function DemoModal({ onClose }: DemoModalProps) {
                             </div>
 
                             <div className="form-group" style={{ margin: 0 }}>
-                                <label className="form-label" htmlFor="businessName">Emri i Biznesit *</label>
+                                <label className="form-label" htmlFor="businessName">Business Name *</label>
                                 <input
                                     id="businessName"
                                     type="text"
@@ -135,7 +135,7 @@ export default function DemoModal({ onClose }: DemoModalProps) {
                             </div>
 
                             <div className="form-group" style={{ margin: 0 }}>
-                                <label className="form-label" htmlFor="phone">Numri i Telefonit *</label>
+                                <label className="form-label" htmlFor="phone">Phone Number *</label>
                                 <input
                                     id="phone"
                                     type="tel"
@@ -143,22 +143,22 @@ export default function DemoModal({ onClose }: DemoModalProps) {
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                     required
-                                    placeholder="+383..."
+                                    placeholder="+1..."
                                 />
                             </div>
 
                             <div className="modal-footer" style={{ padding: 0, marginTop: 'var(--space-2)' }}>
                                 <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isSubmitting}>
-                                    Anulo
+                                    Cancel
                                 </button>
                                 <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
                                     {isSubmitting ? (
                                         <>
                                             <span className="spinner" style={{ width: '16px', height: '16px' }} />
-                                            Duke dërguar...
+                                            Sending...
                                         </>
                                     ) : (
-                                        'Dërgo Kërkesën'
+                                        'Submit Request'
                                     )}
                                 </button>
                             </div>

@@ -35,7 +35,7 @@ export default function HomePage() {
                     Vjen
                 </div>
                 <Link href="/login" className="btn btn-secondary btn-sm">
-                    Kyçuni
+                    Sign In
                 </Link>
             </div>
 
@@ -67,7 +67,7 @@ export default function HomePage() {
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                         }}>
-                            Asnjë termin i humbur
+                            No Appointment Left Behind
                         </span>
                     </h1>
 
@@ -79,15 +79,15 @@ export default function HomePage() {
                         margin: '0 auto var(--space-10)',
                         lineHeight: '1.6',
                     }}>
-                        Platforma gjithëpërfshirëse për biznesin tuaj. Rezervime online, njoftime automatike në WhatsApp, dhe kontroll i plotë mbi orarin tuaj.
+                        The all-in-one platform for your business. Online bookings, automatic WhatsApp notifications, and complete control over your schedule.
                     </p>
 
                     <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center' }}>
                         <button onClick={() => setShowDemoModal(true)} className="btn btn-primary btn-lg">
-                            Rezervo Demo
+                            Book a Demo
                         </button>
                         <Link href="/login" className="btn btn-secondary btn-lg">
-                            Fillo Tani
+                            Get Started
                         </Link>
                     </div>
                 </div>
@@ -103,19 +103,19 @@ export default function HomePage() {
                         alignItems: 'center'
                     }}>
                         <div>
-                            <div className="badge badge-success mb-4">Integrim WhatsApp & SMS</div>
+                            <div className="badge badge-success mb-4">WhatsApp & SMS Integration</div>
                             <h2 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-3xl)' }}>
-                                Njoftime & Verifikim i Sigurt
+                                Notifications & Secure Verification
                             </h2>
                             <p style={{ fontSize: 'var(--text-lg)', color: 'var(--text-secondary)' }}>
-                                Harrojini SMS-të dhe email-et që injorohen. Vjen dërgon konfirmime dhe rikujtime automatike direkt në WhatsApp-in e klientit.
-                                Për siguri maksimale, ofrojmë edhe verifikim me SMS.
+                                Forget SMS and emails that get ignored. Vjen sends automatic confirmations and reminders directly to your client's WhatsApp.
+                                For maximum security, we also offer SMS verification.
                             </p>
                             <ul style={{ listStyle: 'none', padding: 0, marginTop: 'var(--space-6)' }}>
                                 {[
-                                    'Konfirmim i menjëhershëm pas rezervimit',
-                                    'Verifikim me kod SMS për siguri',
-                                    'Komunikim i drejtpërdrejtë dhe personal'
+                                    'Instant confirmation after booking',
+                                    'SMS code verification for security',
+                                    'Direct and personal communication'
                                 ].map((item, i) => (
                                     <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
                                         <div style={{ color: 'var(--color-success-500)' }}>
@@ -137,10 +137,10 @@ export default function HomePage() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                                 <div style={{ alignSelf: 'flex-start', background: 'white', padding: 'var(--space-3)', borderRadius: '0 12px 12px 12px', maxWidth: '80%', boxShadow: 'var(--shadow-sm)' }}>
                                     <div style={{ fontWeight: 'bold', fontSize: 'var(--text-xs)', color: 'var(--color-primary-600)', marginBottom: '4px' }}>Vjen Bot</div>
-                                    Përshëndetje! Termini juaj u konfirmua për nesër në ora 14:00.
+                                    Hello! Your appointment has been confirmed for tomorrow at 2:00 PM.
                                 </div>
                                 <div style={{ alignSelf: 'flex-end', background: '#DCF8C6', padding: 'var(--space-3)', borderRadius: '12px 0 12px 12px', maxWidth: '80%', boxShadow: 'var(--shadow-sm)', filter: 'brightness(0.95)' }}>
-                                    Faleminderit shumë! Shihemi.
+                                    Thank you so much! See you then.
                                 </div>
                             </div>
                         </div>
@@ -152,12 +152,12 @@ export default function HomePage() {
             <section style={{ padding: 'var(--space-20) 0', background: 'var(--bg-primary)' }}>
                 <div className="container">
                     <div className="text-center" style={{ marginBottom: 'var(--space-12)' }}>
-                        <div className="badge badge-primary mb-4">Orari i Mençur</div>
+                        <div className="badge badge-primary mb-4">Smart Scheduling</div>
                         <h2 style={{ fontSize: 'var(--text-3xl)', marginBottom: 'var(--space-4)' }}>
-                            Fleksibilitet i Plotë për Profesionistë
+                            Complete Flexibility for Professionals
                         </h2>
                         <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto' }}>
-                            Jeta ndodh. Vjen ju lejon të përshtatni orarin tuaj në sekonda, pa komplikime.
+                            Life happens. Vjen lets you adjust your schedule in seconds, without complications.
                         </p>
                     </div>
 
@@ -167,8 +167,8 @@ export default function HomePage() {
                         gap: 'var(--space-8)'
                     }}>
                         <FeatureBox
-                            title="Blloko Orarin"
-                            desc="Keni një urgjencë apo pauzë dreke? Bllokoni orare specifike me një klikim dhe ato zhduken nga faqja e rezervimit."
+                            title="Block Time Slots"
+                            desc="Have an emergency or lunch break? Block specific time slots with one click and they disappear from your booking page."
                             icon={
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -177,8 +177,8 @@ export default function HomePage() {
                             }
                         />
                         <FeatureBox
-                            title="Data Speciale"
-                            desc="Punoni me orar të shkurtër të Premten? Apo jeni pushim për festa? Menaxhoni përjashtimet me lehtësi."
+                            title="Special Dates"
+                            desc="Working shorter hours on Friday? Or on holiday? Manage exceptions with ease."
                             icon={
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -189,8 +189,8 @@ export default function HomePage() {
                             }
                         />
                         <FeatureBox
-                            title="Menaxhimi i Ditëve"
-                            desc="Caktoni ditët e punës dhe kohëzgjatjen standarde të termineve (30min, 45min, 60min) sipas nevojës suaj."
+                            title="Day Management"
+                            desc="Set your working days and standard appointment duration (30min, 45min, 60min) according to your needs."
                             icon={
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -206,7 +206,7 @@ export default function HomePage() {
             <section style={{ padding: 'var(--space-20) 0', background: 'var(--bg-secondary)' }}>
                 <div className="container">
                     <h2 className="text-center" style={{ marginBottom: 'var(--space-16)', fontSize: 'var(--text-3xl)' }}>
-                        Si funksionon?
+                        How does it work?
                     </h2>
                     <div style={{
                         display: 'grid',
@@ -214,10 +214,10 @@ export default function HomePage() {
                         gap: 'var(--space-8)',
                         textAlign: 'center'
                     }}>
-                        <Step number="1" title="Krijo Profilin" desc="Regjistro biznesin dhe cakto orarin tënd të punës." />
-                        <Step number="2" title="Ndaj Linkun" desc="Merr linkun tënd unik (vjen.al/biznesijuaj) dhe dërgoja klientëve." />
-                        <Step number="3" title="Prano Rezervime" desc="Klientët rezervojnë vetë. Ti merr njoftim, ata marrin konfirmim." />
-                        <Step number="4" title="Menaxho" desc="Shiko kalendarin, blloko orare, dhe ndiq statistikat nga paneli." />
+                        <Step number="1" title="Create Your Profile" desc="Register your business and set your working hours." />
+                        <Step number="2" title="Share Your Link" desc="Get your unique link (vjen.al/yourbusiness) and share it with clients." />
+                        <Step number="3" title="Accept Bookings" desc="Clients book themselves. You get notified, they get confirmation." />
+                        <Step number="4" title="Manage" desc="View calendar, block time slots, and track statistics from the dashboard." />
                     </div>
                 </div>
             </section>
@@ -226,13 +226,13 @@ export default function HomePage() {
             <section style={{ padding: 'var(--space-20) 0', background: 'var(--color-primary-900)', color: 'white', textAlign: 'center' }}>
                 <div className="container">
                     <h2 style={{ fontSize: 'var(--text-4xl)', marginBottom: 'var(--space-6)', color: 'white' }}>
-                        Gati për të modernizuar biznesin tuaj?
+                        Ready to modernize your business?
                     </h2>
                     <p style={{ fontSize: 'var(--text-xl)', opacity: 0.8, marginBottom: 'var(--space-10)' }}>
-                        Bashkohuni me profesionistët që zgjedhin Vjen.
+                        Join the professionals who choose Vjen.
                     </p>
                     <button onClick={() => setShowDemoModal(true)} className="btn btn-primary btn-lg" style={{ background: 'white', color: 'var(--color-primary-600)' }}>
-                        Provo Falas Tani
+                        Try Free Now
                     </button>
                 </div>
             </section>

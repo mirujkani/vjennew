@@ -33,7 +33,7 @@ export default function BookingSuccess({
                     </p>
 
                     <button className="btn btn-primary w-full" onClick={onRestart}>
-                        Cakto një termin
+                        Mbyll
                     </button>
                 </div>
             </div>

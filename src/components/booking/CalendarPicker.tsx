@@ -16,11 +16,11 @@ export default function CalendarPicker({
     const [currentMonth, setCurrentMonth] = useState(new Date());
 
     const monthNames = [
-        'Janar', 'Shkurt', 'Mars', 'Prill', 'Maj', 'Qershor',
-        'Korrik', 'Gusht', 'Shtator', 'Tetor', 'Nëntor', 'Dhjetor'
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
     ];
 
-    const weekDays = ['Die', 'Hën', 'Mar', 'Mër', 'Enj', 'Pre', 'Sht'];
+    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     const getDaysInMonth = (date: Date) => {
         const year = date.getFullYear();
@@ -114,7 +114,7 @@ export default function CalendarPicker({
                     onClick={goToPreviousMonth}
                     disabled={!canGoPrevious()}
                     style={{ opacity: canGoPrevious() ? 1 : 0.3 }}
-                    aria-label="Muaji i kaluar"
+                    aria-label="Previous month"
                 >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <polyline points="15,18 9,12 15,6" />
@@ -128,7 +128,7 @@ export default function CalendarPicker({
                 <button
                     className="calendar-nav-btn"
                     onClick={goToNextMonth}
-                    aria-label="Muaji tjetër"
+                    aria-label="Next month"
                 >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <polyline points="9,18 15,12 9,6" />

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getDashboardStats, getBusiness } from '@/lib/store';
-import { Appointment, Business } from '@/lib/types';
+import { getDashboardStats, getBusiness, getSpecialists } from '@/lib/store';
+import { Appointment, Business, Specialist } from '@/lib/types';
 
 export default function DashboardPage() {
     const [business, setBusiness] = useState<Business | null>(null);
@@ -14,18 +14,28 @@ export default function DashboardPage() {
         todayAppointments: Appointment[];
         upcomingAppointments: Appointment[];
     } | null>(null);
+    const [specialists, setSpecialists] = useState<Specialist[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [biz, statsData] = await Promise.all([
+                const [biz, statsData, specs] = await Promise.all([
                     getBusiness(),
-                    getDashboardStats()
+                    getDashboardStats(),
+                    getSpecialists()
                 ]);
+
+                // Redirect to onboarding if not completed (and strictly false, to avoid redirecting legacy users)
+                if (biz.onboardingCompleted === false) {
+                    window.location.href = '/onboarding'; // Use window.location for hard redirect
+                    return;
+                }
+
                 setBusiness(biz);
                 setStats(statsData);
+                setSpecialists(specs);
             } catch (error) {
                 console.error('Error loading dashboard:', error);
             } finally {
@@ -46,11 +56,11 @@ export default function DashboardPage() {
         tomorrow.setDate(tomorrow.getDate() + 1);
 
         if (dateStr === today.toISOString().split('T')[0]) {
-            return 'Sot';
+            return 'Today';
         } else if (dateStr === tomorrow.toISOString().split('T')[0]) {
-            return 'Nesër';
+            return 'Tomorrow';
         }
-        return date.toLocaleDateString('sq-AL', { weekday: 'short', month: 'short', day: 'numeric' });
+        return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     };
 
     const getStatusColor = (status: string) => {
@@ -85,7 +95,7 @@ export default function DashboardPage() {
 
     const statCards = [
         {
-            label: "Terminet e Sotme",
+            label: "Today's Appointments",
             value: stats?.todayCount || 0,
             icon: (
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -98,7 +108,7 @@ export default function DashboardPage() {
             color: 'var(--color-primary-500)',
         },
         {
-            label: 'Këtë Javë',
+            label: 'This Week',
             value: stats?.weekCount || 0,
             icon: (
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -108,7 +118,7 @@ export default function DashboardPage() {
             color: 'var(--color-accent-500)',
         },
         {
-            label: 'Klientë Total',
+            label: 'Total Clients',
             value: stats?.totalClients || 0,
             icon: (
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -158,21 +168,21 @@ export default function DashboardPage() {
                         <line x1="12" y1="5" x2="12" y2="19" />
                         <line x1="5" y1="12" x2="19" y2="12" />
                     </svg>
-                    Cakto Termin
+                    New Appointment
                 </Link>
                 <button className="btn btn-secondary" onClick={copyBookingLink}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                         <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                     </svg>
-                    {copied ? 'U kopjua!' : 'Kopjo Linkun'}
+                    {copied ? 'Copied!' : 'Copy Link'}
                 </button>
                 <Link href="/dashboard/availability" className="btn btn-secondary">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <circle cx="12" cy="12" r="10" />
                         <polyline points="12,6 12,12 16,14" />
                     </svg>
-                    Cakto Disponueshmërinë
+                    Set Availability
                 </Link>
             </div>
 
@@ -184,9 +194,9 @@ export default function DashboardPage() {
                     justifyContent: 'space-between',
                     marginBottom: 'var(--space-6)',
                 }}>
-                    <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Terminet e Ardhshme</h2>
+                    <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Upcoming Appointments</h2>
                     <Link href="/dashboard/appointments" className="btn btn-ghost btn-sm">
-                        Shiko të Gjitha
+                        View All
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <polyline points="9,18 15,12 9,6" />
                         </svg>
@@ -207,7 +217,13 @@ export default function DashboardPage() {
                             <div className="appointment-details">
                                 <div className="appointment-client">{apt.clientName}</div>
                                 <div className="appointment-info">
-                                    {formatDate(apt.date)} {apt.serviceName && `• ${apt.serviceName}`}
+                                    {formatDate(apt.date)}
+                                    {apt.serviceName && ` • ${apt.serviceName}`}
+                                    {(apt.specialistName || specialists.find(s => s.id === apt.specialistId)?.name) && (
+                                        <span style={{ color: 'var(--color-primary-500)', marginLeft: '4px' }}>
+                                            • {apt.specialistName || specialists.find(s => s.id === apt.specialistId)?.name}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                             <div className="appointment-actions">
@@ -218,7 +234,7 @@ export default function DashboardPage() {
                                         color: getStatusColor(apt.status),
                                     }}
                                 >
-                                    {apt.status === 'confirmed' ? 'Konfirmuar' : apt.status === 'pending' ? 'Në pritje' : apt.status}
+                                    {apt.status === 'confirmed' ? 'Confirmed' : apt.status === 'pending' ? 'Pending' : apt.status}
                                 </span>
                             </div>
                         </div>
@@ -244,7 +260,7 @@ export default function DashboardPage() {
                                 <line x1="8" y1="2" x2="8" y2="6" />
                                 <line x1="3" y1="10" x2="21" y2="10" />
                             </svg>
-                            <p style={{ margin: 0 }}>Nuk keni termine të ardhshme</p>
+                            <p style={{ margin: 0 }}>No upcoming appointments</p>
                         </div>
                     )}
                 </div>

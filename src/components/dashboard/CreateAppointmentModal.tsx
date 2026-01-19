@@ -44,12 +44,12 @@ export default function CreateAppointmentModal({ onClose, onSuccess, initialData
     useEffect(() => {
         if (formData.date) {
             setLoadingSlots(true);
-            generateTimeSlots(formData.date).then(slots => {
+            generateTimeSlots(formData.date, undefined, selectedSpecialistId, formData.duration).then(slots => {
                 setTimeSlots(slots);
                 setLoadingSlots(false);
             });
         }
-    }, [formData.date]);
+    }, [formData.date, selectedSpecialistId, formData.duration]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -69,7 +69,7 @@ export default function CreateAppointmentModal({ onClose, onSuccess, initialData
             onClose();
         } catch (error) {
             console.error(error);
-            alert('Dështoi krijimi i terminit');
+            alert('Failed to create appointment');
             setLoading(false);
         }
     };
@@ -78,7 +78,7 @@ export default function CreateAppointmentModal({ onClose, onSuccess, initialData
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2 style={{ margin: 0, fontSize: 'var(--text-xl)' }}>Cakto Termin të Ri</h2>
+                    <h2 style={{ margin: 0, fontSize: 'var(--text-xl)' }}>Create New Appointment</h2>
                     <button className="btn btn-ghost btn-icon" onClick={onClose} type="button">
                         x
                     </button>
@@ -88,7 +88,7 @@ export default function CreateAppointmentModal({ onClose, onSuccess, initialData
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                             <div className="form-group" style={{ margin: 0 }}>
-                                <label className="form-label" htmlFor="clientName">Emri i Klientit *</label>
+                                <label className="form-label" htmlFor="clientName">Client Name *</label>
                                 <input
                                     id="clientName"
                                     className="form-input"
@@ -98,7 +98,7 @@ export default function CreateAppointmentModal({ onClose, onSuccess, initialData
                                 />
                             </div>
                             <div className="form-group" style={{ margin: 0 }}>
-                                <label className="form-label" htmlFor="clientPhone">Numri i Telefonit *</label>
+                                <label className="form-label" htmlFor="clientPhone">Phone Number *</label>
                                 <input
                                     id="clientPhone"
                                     className="form-input"
@@ -110,7 +110,7 @@ export default function CreateAppointmentModal({ onClose, onSuccess, initialData
                         </div>
 
                         <div className="form-group" style={{ margin: 0 }}>
-                            <label className="form-label" htmlFor="clientEmail">Email (Opsionale)</label>
+                            <label className="form-label" htmlFor="clientEmail">Email (Optional)</label>
                             <input
                                 id="clientEmail"
                                 className="form-input"
@@ -122,7 +122,7 @@ export default function CreateAppointmentModal({ onClose, onSuccess, initialData
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                             <div className="form-group" style={{ margin: 0 }}>
-                                <label className="form-label" htmlFor="aptDate">Data *</label>
+                                <label className="form-label" htmlFor="aptDate">Date *</label>
                                 <input
                                     id="aptDate"
                                     className="form-input"
@@ -133,26 +133,26 @@ export default function CreateAppointmentModal({ onClose, onSuccess, initialData
                                 />
                             </div>
                             <div className="form-group" style={{ margin: 0 }}>
-                                <label className="form-label" htmlFor="aptDuration">Kohëzgjatja (min)</label>
+                                <label className="form-label" htmlFor="aptDuration">Duration (min)</label>
                                 <select
                                     id="aptDuration"
                                     className="form-input form-select"
                                     value={formData.duration}
                                     onChange={(e) => setFormData({ ...formData, duration: Number(e.target.value) })}
                                 >
-                                    <option value={15}>15 minuta</option>
-                                    <option value={30}>30 minuta</option>
-                                    <option value={45}>45 minuta</option>
-                                    <option value={60}>60 minuta</option>
-                                    <option value={90}>90 minuta</option>
+                                    <option value={15}>15 minutes</option>
+                                    <option value={30}>30 minutes</option>
+                                    <option value={45}>45 minutes</option>
+                                    <option value={60}>60 minutes</option>
+                                    <option value={90}>90 minutes</option>
                                 </select>
                             </div>
                         </div>
 
                         <div className="form-group" style={{ margin: 0 }}>
-                            <label className="form-label">Ora *</label>
+                            <label className="form-label">Time *</label>
                             {loadingSlots ? (
-                                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>Duke ngarkuar oraret...</div>
+                                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>Loading times...</div>
                             ) : (
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: 'var(--space-2)', maxHeight: '150px', overflowY: 'auto' }}>
                                     {timeSlots.map(slot => (
@@ -167,13 +167,13 @@ export default function CreateAppointmentModal({ onClose, onSuccess, initialData
                                             {slot.time}
                                         </button>
                                     ))}
-                                    {timeSlots.length === 0 && <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>Nuk ka orare të lira për këtë datë.</span>}
+                                    {timeSlots.length === 0 && <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>No available times for this date.</span>}
                                 </div>
                             )}
                         </div>
 
                         <div className="form-group" style={{ margin: 0 }}>
-                            <label className="form-label" htmlFor="specSelect">Specialisti</label>
+                            <label className="form-label" htmlFor="specSelect">Specialist</label>
                             <select
                                 id="specSelect"
                                 className="form-input form-select"
@@ -187,7 +187,7 @@ export default function CreateAppointmentModal({ onClose, onSuccess, initialData
                         </div>
 
                         <div className="form-group" style={{ margin: 0 }}>
-                            <label className="form-label" htmlFor="notes">Shënime (Opsionale)</label>
+                            <label className="form-label" htmlFor="notes">Notes (Optional)</label>
                             <textarea
                                 id="notes"
                                 className="form-input"
@@ -198,24 +198,24 @@ export default function CreateAppointmentModal({ onClose, onSuccess, initialData
                         </div>
 
                         <div className="form-group" style={{ margin: 0 }}>
-                            <label className="form-label" htmlFor="recurringType">Përsëritja</label>
+                            <label className="form-label" htmlFor="recurringType">Recurring</label>
                             <select
                                 id="recurringType"
                                 className="form-input form-select"
                                 value={formData.recurringType}
                                 onChange={(e) => setFormData({ ...formData, recurringType: e.target.value as any })}
                             >
-                                <option value="none">Vetëm një herë</option>
-                                <option value="weekly">Çdo javë</option>
-                                <option value="biweekly">Çdo dy javë</option>
-                                <option value="monthly">Çdo muaj</option>
+                                <option value="none">One time only</option>
+                                <option value="weekly">Every week</option>
+                                <option value="biweekly">Every two weeks</option>
+                                <option value="monthly">Every month</option>
                             </select>
                         </div>
 
                         <div className="modal-footer" style={{ padding: 0, marginTop: 'var(--space-2)' }}>
-                            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>Anulo</button>
+                            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>Cancel</button>
                             <button type="submit" className="btn btn-primary" disabled={loading || !formData.time}>
-                                {loading ? 'Duke krijuar...' : 'Krijo Termin'}
+                                {loading ? 'Creating...' : 'Create Appointment'}
                             </button>
                         </div>
                     </form>

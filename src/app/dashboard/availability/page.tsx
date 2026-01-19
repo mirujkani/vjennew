@@ -5,7 +5,7 @@ import { getAvailability, updateAvailability, getAvailabilityOverrides, setAvail
 import { Availability, AvailabilityOverride } from '@/lib/types';
 import BlockTimeModal from '@/components/dashboard/BlockTimeModal';
 
-const dayNames = ['E Diel', 'E Hënë', 'E Martë', 'E Mërkurë', 'E Enjte', 'E Premte', 'E Shtunë'];
+const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export default function AvailabilityPage() {
     const [availability, setAvailabilityState] = useState<Availability | null>(null);
@@ -74,7 +74,7 @@ export default function AvailabilityPage() {
             setTimeout(() => setSaved(false), 3000);
         } catch (error) {
             console.error('Error saving availability:', error);
-            alert('Dështoi ruajtja e orarit');
+            alert('Failed to save schedule');
         } finally {
             setIsSaving(false);
         }
@@ -82,7 +82,7 @@ export default function AvailabilityPage() {
 
     const handleSaveOverride = async () => {
         if (!newOverride.date) {
-            alert('Ju lutem zgjidhni një datë');
+            alert('Please select a date');
             return;
         }
 
@@ -102,7 +102,7 @@ export default function AvailabilityPage() {
             setOverrides(updated);
         } catch (error) {
             console.error('Error saving override:', error);
-            alert('Dështoi ruajtja e datës speciale');
+            alert('Failed to save special date');
         }
     };
 
@@ -135,14 +135,14 @@ export default function AvailabilityPage() {
                 gap: 'var(--space-4)',
                 marginBottom: 'var(--space-6)',
             }}>
-                <h1 style={{ fontSize: 'var(--text-2xl)', margin: 0 }}>Cilësimet e Orarit</h1>
+                <h1 style={{ fontSize: 'var(--text-2xl)', margin: 0 }}>Schedule Settings</h1>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                     <button className="btn btn-secondary" onClick={() => setShowBlockTimeModal(true)}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 'var(--space-2)' }}>
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
                         </svg>
-                        Blloko Orarin
+                        Block Time
                     </button>
                     <button
                         className="btn btn-primary"
@@ -152,7 +152,7 @@ export default function AvailabilityPage() {
                         {isSaving ? (
                             <>
                                 <span className="spinner" style={{ width: '16px', height: '16px' }} />
-                                Duke ruajtur...
+                                Saving...
                             </>
                         ) : saved ? (
                             <>
@@ -160,7 +160,7 @@ export default function AvailabilityPage() {
                                     <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
                                     <polyline points="22,4 12,14.01 9,11.01" />
                                 </svg>
-                                U ruajt!
+                                Saved!
                             </>
                         ) : (
                             <>
@@ -169,7 +169,7 @@ export default function AvailabilityPage() {
                                     <polyline points="17,21 17,13 7,13 7,21" />
                                     <polyline points="7,3 7,8 15,8" />
                                 </svg>
-                                Ruaj Ndryshimet
+                                Save Changes
                             </>
                         )}
                     </button>
@@ -178,9 +178,9 @@ export default function AvailabilityPage() {
 
             {/* Working Days */}
             <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
-                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Ditët e Punës</h2>
+                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Working Days</h2>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
-                    Zgjidhni ditët kur jeni në dispozicion për termine.
+                    Select the days you are available for appointments.
                 </p>
                 <div style={{
                     display: 'grid',
@@ -217,9 +217,9 @@ export default function AvailabilityPage() {
 
             {/* Working Hours */}
             <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
-                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Orari i Punës</h2>
+                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Working Hours</h2>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
-                    Caktoni orarin tuaj ditor të punës.
+                    Set your daily working hours.
                 </p>
                 <div style={{
                     display: 'grid',
@@ -227,7 +227,7 @@ export default function AvailabilityPage() {
                     gap: 'var(--space-6)',
                 }}>
                     <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" htmlFor="startTime">Koha e Fillimit</label>
+                        <label className="form-label" htmlFor="startTime">Start Time</label>
                         <input
                             id="startTime"
                             type="time"
@@ -237,7 +237,7 @@ export default function AvailabilityPage() {
                         />
                     </div>
                     <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" htmlFor="endTime">Koha e Mbarimit</label>
+                        <label className="form-label" htmlFor="endTime">End Time</label>
                         <input
                             id="endTime"
                             type="time"
@@ -251,9 +251,9 @@ export default function AvailabilityPage() {
 
             {/* Break Time */}
             <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
-                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Koha e Pushimit</h2>
+                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Break Time</h2>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
-                    Caktoni kohën e pushimit. Asnjë termin nuk do të caktohet gjatë kësaj periudhe.
+                    Set your break time. No appointments will be scheduled during this period.
                 </p>
                 <div style={{
                     display: 'grid',
@@ -261,7 +261,7 @@ export default function AvailabilityPage() {
                     gap: 'var(--space-6)',
                 }}>
                     <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" htmlFor="breakStart">Fillimi i Pushimit</label>
+                        <label className="form-label" htmlFor="breakStart">Break Start</label>
                         <input
                             id="breakStart"
                             type="time"
@@ -271,7 +271,7 @@ export default function AvailabilityPage() {
                         />
                     </div>
                     <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" htmlFor="breakEnd">Mbarimi i Pushimit</label>
+                        <label className="form-label" htmlFor="breakEnd">Break End</label>
                         <input
                             id="breakEnd"
                             type="time"
@@ -285,9 +285,9 @@ export default function AvailabilityPage() {
 
             {/* Appointment Durations */}
             <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
-                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Kohëzgjatja e Termineve</h2>
+                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Appointment Durations</h2>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
-                    Menaxhoni kohëzgjatjet e termineve që ofroni.
+                    Manage the appointment durations you offer.
                 </p>
 
                 <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
@@ -310,7 +310,7 @@ export default function AvailabilityPage() {
                                 }
                             }}
                         >
-                            + Shto
+                            + Add
                         </button>
                     </div>
                 </div>
@@ -354,7 +354,7 @@ export default function AvailabilityPage() {
                 </div>
 
                 <div className="form-group" style={{ margin: 0, maxWidth: '300px' }}>
-                    <label className="form-label" htmlFor="defaultDuration">Kohëzgjatja e parazgjedhur</label>
+                    <label className="form-label" htmlFor="defaultDuration">Default Duration</label>
                     <select
                         id="defaultDuration"
                         className="form-input form-select"
@@ -363,7 +363,7 @@ export default function AvailabilityPage() {
                     >
                         {availability.appointmentDurations.map((duration) => (
                             <option key={duration} value={duration}>
-                                {duration} minuta
+                                {duration} minutes
                             </option>
                         ))}
                     </select>
@@ -374,16 +374,16 @@ export default function AvailabilityPage() {
             <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
                     <div>
-                        <h2 style={{ fontSize: 'var(--text-lg)' }}>Data Speciale</h2>
+                        <h2 style={{ fontSize: 'var(--text-lg)' }}>Special Dates</h2>
                         <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                            Caktoni ditë pushimi ose orare të ndryshme për data specifike.
+                            Set days off or different hours for specific dates.
                         </p>
                     </div>
                     <button
                         className="btn btn-secondary btn-sm"
                         onClick={() => setShowOverrideForm(!showOverrideForm)}
                     >
-                        {showOverrideForm ? 'Anulo' : '+ Shto Datë'}
+                        {showOverrideForm ? 'Cancel' : '+ Add Date'}
                     </button>
                 </div>
 
@@ -396,7 +396,7 @@ export default function AvailabilityPage() {
                     }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
                             <div className="form-group" style={{ margin: 0 }}>
-                                <label className="form-label">Data</label>
+                                <label className="form-label">Date</label>
                                 <input
                                     type="date"
                                     className="form-input"
@@ -405,14 +405,14 @@ export default function AvailabilityPage() {
                                 />
                             </div>
                             <div className="form-group" style={{ margin: 0 }}>
-                                <label className="form-label">Lloji</label>
+                                <label className="form-label">Type</label>
                                 <select
                                     className="form-input form-select"
                                     value={newOverride.isOff ? 'off' : 'custom'}
                                     onChange={(e) => setNewOverride({ ...newOverride, isOff: e.target.value === 'off' })}
                                 >
-                                    <option value="off">Ditë Pushimi</option>
-                                    <option value="custom">Orar Ndryshe</option>
+                                    <option value="off">Day Off</option>
+                                    <option value="custom">Different Hours</option>
                                 </select>
                             </div>
                         </div>
@@ -420,7 +420,7 @@ export default function AvailabilityPage() {
                         {!newOverride.isOff && (
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
                                 <div className="form-group" style={{ margin: 0 }}>
-                                    <label className="form-label">Fillimi</label>
+                                    <label className="form-label">Start</label>
                                     <input
                                         type="time"
                                         className="form-input"
@@ -429,7 +429,7 @@ export default function AvailabilityPage() {
                                     />
                                 </div>
                                 <div className="form-group" style={{ margin: 0 }}>
-                                    <label className="form-label">Mbarimi</label>
+                                    <label className="form-label">End</label>
                                     <input
                                         type="time"
                                         className="form-input"
@@ -442,7 +442,7 @@ export default function AvailabilityPage() {
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                             <button className="btn btn-primary btn-sm" onClick={handleSaveOverride}>
-                                Ruaj
+                                Save
                             </button>
                         </div>
                     </div>
@@ -451,7 +451,7 @@ export default function AvailabilityPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                     {overrides.length === 0 ? (
                         <div style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--text-sm)', border: '1px dashed var(--border-color)', borderRadius: 'var(--radius-md)' }}>
-                            Nuk ka data speciale të caktuara
+                            No special dates set
                         </div>
                     ) : (
                         overrides.map((override) => (
@@ -465,10 +465,10 @@ export default function AvailabilityPage() {
                             }}>
                                 <div>
                                     <div style={{ fontWeight: 'var(--font-medium)', color: 'var(--text-primary)' }}>
-                                        {new Date(override.date).toLocaleDateString('sq-AL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                        {new Date(override.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                                     </div>
                                     <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary-500)' }}>
-                                        {override.isOff ? 'Ditë Pushimi' : `${override.startTime} - ${override.endTime}`}
+                                        {override.isOff ? 'Day Off' : `${override.startTime} - ${override.endTime}`}
                                     </div>
                                 </div>
                                 <button
@@ -491,7 +491,7 @@ export default function AvailabilityPage() {
             <div className="card" style={{
                 background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.1) 0%, transparent 100%)',
             }}>
-                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Përmbledhja e Orarit</h2>
+                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Schedule Summary</h2>
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
@@ -499,17 +499,17 @@ export default function AvailabilityPage() {
                 }}>
                     <div>
                         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: 'var(--space-1)' }}>
-                            Ditët e Punës
+                            Working Days
                         </div>
                         <div style={{ color: 'var(--text-primary)', fontWeight: 'var(--font-medium)' }}>
                             {availability.workingDays.length === 0
-                                ? 'Asnjë ditë e zgjedhur'
+                                ? 'No days selected'
                                 : availability.workingDays.map(d => dayNames[d].slice(0, 3)).join(', ')}
                         </div>
                     </div>
                     <div>
                         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: 'var(--space-1)' }}>
-                            Orari i Punës
+                            Working Hours
                         </div>
                         <div style={{ color: 'var(--text-primary)', fontWeight: 'var(--font-medium)' }}>
                             {availability.startTime} - {availability.endTime}
@@ -517,20 +517,20 @@ export default function AvailabilityPage() {
                     </div>
                     <div>
                         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: 'var(--space-1)' }}>
-                            Koha e Pushimit
+                            Break Time
                         </div>
                         <div style={{ color: 'var(--text-primary)', fontWeight: 'var(--font-medium)' }}>
                             {availability.breakStart && availability.breakEnd
                                 ? `${availability.breakStart} - ${availability.breakEnd}`
-                                : 'Pa caktuar'}
+                                : 'Not set'}
                         </div>
                     </div>
                     <div>
                         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: 'var(--space-1)' }}>
-                            Termini Standard
+                            Default Appointment
                         </div>
                         <div style={{ color: 'var(--text-primary)', fontWeight: 'var(--font-medium)' }}>
-                            {availability.defaultDuration} minuta
+                            {availability.defaultDuration} minutes
                         </div>
                     </div>
                 </div>

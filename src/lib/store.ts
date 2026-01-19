@@ -43,6 +43,7 @@ const defaultBusiness: Business = {
     urlLocked: false,
     showServices: false,
     services: [],
+    onboardingCompleted: false,
 };
 
 const defaultSpecialist: Omit<Specialist, 'id'> = {
@@ -373,6 +374,7 @@ export async function createAppointment(
             status: status,
             verificationMethod: data.verificationMethod,
             notes: data.notes || null,
+            specialistName: data.specialistName || null,
             createdAt: new Date().toISOString(),
             serviceId: data.serviceId || null,
             serviceName: data.serviceName || null,
@@ -557,7 +559,7 @@ export interface TimeSlotStatus {
     reason?: 'booked' | 'break' | 'blocked' | 'past';
 }
 
-export async function generateTimeSlots(date: string, businessId?: string): Promise<TimeSlotStatus[]> {
+export async function generateTimeSlots(date: string, businessId?: string, specialistId?: string, duration?: number): Promise<TimeSlotStatus[]> {
     const availability = await getAvailability(businessId);
     const existingAppointments = await getAppointmentsByDate(date, businessId);
     const overrides = await getAvailabilityOverrides(businessId);
@@ -571,32 +573,62 @@ export async function generateTimeSlots(date: string, businessId?: string): Prom
 
     const [startHour, startMin] = startTime.split(':').map(Number);
     const [endHour, endMin] = endTime.split(':').map(Number);
+    const startTotalMinutes = startHour * 60 + startMin;
+    const endTotalMinutes = endHour * 60 + endMin;
 
     const [breakStartHour, breakStartMin] = (availability.breakStart || '').split(':').map(Number);
     const [breakEndHour, breakEndMin] = (availability.breakEnd || '').split(':').map(Number);
+    const breakStartTotalMinutes = !isNaN(breakStartHour) ? breakStartHour * 60 + (breakStartMin || 0) : null;
+    const breakEndTotalMinutes = !isNaN(breakEndHour) ? breakEndHour * 60 + (breakEndMin || 0) : null;
 
     const dateObj = new Date(date);
     const workingDays = availability.workingDays || [1, 2, 3, 4, 5];
     if (!override && !workingDays.includes(dateObj.getDay())) return slots;
 
     const blockedSlots = await getBlockedSlots(date, businessId);
-    const duration = availability.defaultDuration;
-    let currentHour = startHour;
-    let currentMin = startMin;
+    const slotDuration = duration || availability.defaultDuration || 30; // Use requested duration or default
+    const step = 15; // 15 minute intervals for flexibility
 
-    while (currentHour < endHour || (currentHour === endHour && currentMin < endMin)) {
-        const timeStr = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
+    let currentTotalMinutes = startTotalMinutes;
 
+    while (currentTotalMinutes + slotDuration <= endTotalMinutes) {
+        const hour = Math.floor(currentTotalMinutes / 60);
+        const min = currentTotalMinutes % 60;
+        const timeStr = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+        const slotEndMinutes = currentTotalMinutes + slotDuration;
+
+        // Check break overlap (if break exists)
         let isDuringBreak = false;
-        if (breakStartHour !== null && breakEndHour !== null) {
-            const currentMinutes = currentHour * 60 + currentMin;
-            const breakStartMinutes = breakStartHour * 60 + (breakStartMin || 0);
-            const breakEndMinutes = breakEndHour * 60 + (breakEndMin || 0);
-            isDuringBreak = currentMinutes >= breakStartMinutes && currentMinutes < breakEndMinutes;
+        if (breakStartTotalMinutes !== null && breakEndTotalMinutes !== null) {
+            // Check if ANY part of the slot falls within the break
+            // Overlap logic: (StartA < EndB) && (EndA > StartB)
+            isDuringBreak = (currentTotalMinutes < breakEndTotalMinutes) && (slotEndMinutes > breakStartTotalMinutes);
         }
 
-        const isBooked = existingAppointments.some(apt => apt.time === timeStr && apt.status !== 'cancelled');
-        const isBlocked = blockedSlots.some(block => timeStr >= block.startTime && timeStr < block.endTime);
+        // Check appointment overlap
+        const isBooked = existingAppointments.some(apt => {
+            if (apt.status === 'cancelled') return false;
+            if (specialistId && apt.specialistId !== specialistId) return false;
+
+            const [aptHour, aptMin] = apt.time.split(':').map(Number);
+            const aptStartMinutes = aptHour * 60 + aptMin;
+            const aptEndMinutes = aptStartMinutes + apt.duration;
+
+            return (currentTotalMinutes < aptEndMinutes) && (slotEndMinutes > aptStartMinutes);
+        });
+
+        // Check blocked slots overlap
+        const isBlocked = blockedSlots.some(block => {
+            if (specialistId && block.specialistId && block.specialistId !== specialistId) return false;
+
+            const [blockStartH, blockStartM] = block.startTime.split(':').map(Number);
+            const [blockEndH, blockEndM] = block.endTime.split(':').map(Number);
+            const blockStartMinutes = blockStartH * 60 + blockStartM;
+            const blockEndMinutes = blockEndH * 60 + blockEndM;
+
+            return (currentTotalMinutes < blockEndMinutes) && (slotEndMinutes > blockStartMinutes);
+        });
+
         const isPast = new Date(date + 'T' + timeStr) < new Date();
 
         let reason: 'booked' | 'break' | 'blocked' | 'past' | undefined;
@@ -611,11 +643,7 @@ export async function generateTimeSlots(date: string, businessId?: string): Prom
             reason,
         });
 
-        currentMin += duration;
-        if (currentMin >= 60) {
-            currentHour += Math.floor(currentMin / 60);
-            currentMin = currentMin % 60;
-        }
+        currentTotalMinutes += step;
     }
     return slots;
 }

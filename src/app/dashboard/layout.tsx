@@ -9,7 +9,7 @@ import { Business } from '@/lib/types';
 const navItems = [
     {
         href: '/dashboard',
-        label: 'Pasqyra',
+        label: 'Dashboard',
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="7" height="7" />
@@ -21,7 +21,7 @@ const navItems = [
     },
     {
         href: '/dashboard/appointments',
-        label: 'Terminet',
+        label: 'Appointments',
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -33,7 +33,7 @@ const navItems = [
     },
     {
         href: '/dashboard/availability',
-        label: 'Orari',
+        label: 'Schedule',
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10" />
@@ -43,7 +43,7 @@ const navItems = [
     },
     {
         href: '/dashboard/settings',
-        label: 'Konfigurimet',
+        label: 'Settings',
         icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="3" />
@@ -114,7 +114,7 @@ export default function DashboardLayout({
                         border: '1px solid var(--border-color)',
                     }}>
                         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: 'var(--space-2)' }}>
-                            Linku juaj i rezervimeve
+                            Your booking link
                         </div>
                         <div style={{
                             display: 'flex',
@@ -145,7 +145,7 @@ export default function DashboardLayout({
                                 <polyline points="15,3 21,3 21,9" />
                                 <line x1="10" y1="14" x2="21" y2="3" />
                             </svg>
-                            Shiko Faqen
+                            View Page
                         </Link>
 
                         <div style={{ paddingTop: 'var(--space-3)', borderTop: '1px solid var(--border-color)' }}>
@@ -223,7 +223,7 @@ function SignOutButton() {
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
-            Dilni
+            Sign Out
         </button>
     );
 }

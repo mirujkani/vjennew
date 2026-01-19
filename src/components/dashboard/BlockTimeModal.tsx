@@ -28,7 +28,7 @@ export default function BlockTimeModal({ onClose, onSuccess }: BlockTimeModalPro
             onClose();
         } catch (error) {
             console.error('Error blocking time:', error);
-            alert('Dështoi bllokimi i orarit');
+            alert('Failed to block time');
         } finally {
             setIsSubmitting(false);
         }
@@ -61,7 +61,7 @@ export default function BlockTimeModal({ onClose, onSuccess }: BlockTimeModalPro
                     alignItems: 'center',
                     marginBottom: 'var(--space-6)',
                 }}>
-                    <h2 style={{ fontSize: 'var(--text-xl)', margin: 0 }}>Blloko Orarin</h2>
+                    <h2 style={{ fontSize: 'var(--text-xl)', margin: 0 }}>Block Time</h2>
                     <button
                         onClick={onClose}
                         style={{
@@ -81,7 +81,7 @@ export default function BlockTimeModal({ onClose, onSuccess }: BlockTimeModalPro
 
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label className="form-label">Data</label>
+                        <label className="form-label">Date</label>
                         <input
                             type="date"
                             className="form-input"
@@ -93,7 +93,7 @@ export default function BlockTimeModal({ onClose, onSuccess }: BlockTimeModalPro
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                         <div className="form-group">
-                            <label className="form-label">Ora e Fillimit (24h)</label>
+                            <label className="form-label">Start Time (24h)</label>
                             <input
                                 type="time"
                                 className="form-input"
@@ -103,7 +103,7 @@ export default function BlockTimeModal({ onClose, onSuccess }: BlockTimeModalPro
                             />
                         </div>
                         <div className="form-group">
-                            <label className="form-label">Ora e Mbarimit (24h)</label>
+                            <label className="form-label">End Time (24h)</label>
                             <input
                                 type="time"
                                 className="form-input"
@@ -115,13 +115,13 @@ export default function BlockTimeModal({ onClose, onSuccess }: BlockTimeModalPro
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Arsyeja (Opsionale)</label>
+                        <label className="form-label">Reason (Optional)</label>
                         <textarea
                             className="form-input"
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
                             rows={3}
-                            placeholder="P.sh. Dreka, Mbledhje, etj."
+                            placeholder="e.g. Lunch, Meeting, etc."
                         />
                     </div>
 
@@ -132,7 +132,7 @@ export default function BlockTimeModal({ onClose, onSuccess }: BlockTimeModalPro
                             onClick={onClose}
                             style={{ flex: 1 }}
                         >
-                            Anulo
+                            Cancel
                         </button>
                         <button
                             type="submit"
@@ -140,7 +140,7 @@ export default function BlockTimeModal({ onClose, onSuccess }: BlockTimeModalPro
                             disabled={isSubmitting}
                             style={{ flex: 1 }}
                         >
-                            {isSubmitting ? 'Duke ruajtur...' : 'Blloko'}
+                            {isSubmitting ? 'Saving...' : 'Block'}
                         </button>
                     </div>
                 </form>

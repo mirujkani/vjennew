@@ -6,13 +6,19 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "YOUR_API_KEY",
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "YOUR_PROJECT.firebaseapp.com",
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "YOUR_PROJECT_ID",
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "YOUR_PROJECT.appspot.com",
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "YOUR_SENDER_ID",
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "YOUR_APP_ID",
+    apiKey: "AIzaSyA2qtFM0ppgnczSIGiCTNKcHDSxpKAbKN8",
+    authDomain: "vjen-c6b73.firebaseapp.com",
+    projectId: "vjen-c6b73",
+    storageBucket: "vjen-c6b73.firebasestorage.app",
+    messagingSenderId: "712874634708",
+    appId: "1:712874634708:web:5cc5a3bb386851c6fbfa41",
+    measurementId: "G-5TV7WJKF5G"
 };
+
+// DEBUG: Log to confirm hardcoded values are active
+if (typeof window !== 'undefined') {
+    console.log("Firebase Config: Using HARDCODED values for debugging.");
+}
 
 // Initialize Firebase (prevent multiple initializations)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];

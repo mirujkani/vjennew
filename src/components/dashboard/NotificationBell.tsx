@@ -1,17 +1,46 @@
 import { useState, useEffect, useRef } from 'react';
-import { getNotifications, markNotificationAsRead } from '@/lib/store';
+import { getNotifications, markNotificationAsRead, getBusiness } from '@/lib/store';
 import { Notification } from '@/lib/types';
+
+const NOTIFICATION_SOUND_URL = 'https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3';
 
 export default function NotificationBell() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const previousUnreadCountRef = useRef(0);
+    const firstLoadRef = useRef(true);
 
     const loadNotifications = async () => {
-        const data = await getNotifications(10);
-        setNotifications(data);
-        setUnreadCount(data.filter(n => !n.read).length);
+        try {
+            const [data, business] = await Promise.all([
+                getNotifications(10),
+                getBusiness()
+            ]);
+
+            const newUnreadCount = data.filter(n => !n.read).length;
+
+            if (firstLoadRef.current) {
+                firstLoadRef.current = false;
+                previousUnreadCountRef.current = newUnreadCount;
+                setNotifications(data);
+                setUnreadCount(newUnreadCount);
+                return;
+            }
+
+            // Play sound if new notification arrived (count increased) AND sound is enabled
+            if (newUnreadCount > previousUnreadCountRef.current && business?.notificationSound) {
+                const audio = new Audio(NOTIFICATION_SOUND_URL);
+                audio.play().catch(e => console.error('Error playing notification sound:', e));
+            }
+
+            previousUnreadCountRef.current = newUnreadCount;
+            setNotifications(data);
+            setUnreadCount(newUnreadCount);
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        }
     };
 
     useEffect(() => {

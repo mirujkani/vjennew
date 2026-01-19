@@ -43,7 +43,7 @@ export default function BookingConfirmation({
 
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr);
-        return date.toLocaleDateString('sq-AL', {
+        return date.toLocaleDateString('en-US', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -59,17 +59,17 @@ export default function BookingConfirmation({
         const newErrors: Record<string, string> = {};
 
         if (!formData.name.trim()) {
-            newErrors.name = 'Emri është i detyrueshëm';
+            newErrors.name = 'Name is required';
         }
 
         if (!formData.phone.trim()) {
-            newErrors.phone = 'Numri i telefonit është i detyrueshëm';
+            newErrors.phone = 'Phone number is required';
         } else if (!/^[\d\s\-+()]+$/.test(formData.phone)) {
-            newErrors.phone = 'Ju lutem shkruani një numër të vlefshëm';
+            newErrors.phone = 'Please enter a valid phone number';
         }
 
         if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = 'Ju lutem shkruani një email të vlefshëm';
+            newErrors.email = 'Please enter a valid email';
         }
 
         setErrors(newErrors);
@@ -98,12 +98,12 @@ export default function BookingConfirmation({
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2 style={{ margin: 0, fontSize: 'var(--text-xl)' }}>
-                        {isWaitlist ? 'Bashkohuni në Listën e Pritjes' : 'Konfirmoni Terminin Tuaj'}
+                        {isWaitlist ? 'Join the Waitlist' : 'Confirm Your Appointment'}
                     </h2>
                     <button
                         className="btn btn-ghost btn-icon"
                         onClick={onCancel}
-                        aria-label="Mbyll"
+                        aria-label="Close"
                     >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <line x1="18" y1="6" x2="6" y2="18" />
@@ -150,7 +150,7 @@ export default function BookingConfirmation({
                                     <polyline points="12,6 12,12 16,14" />
                                 </svg>
                                 <span style={{ color: 'var(--text-secondary)' }}>
-                                    {isWaitlist ? 'Interesi për oraret: ' : ''}
+                                    {isWaitlist ? 'Preferred times: ' : ''}
                                     {formatTime(time)} {duration > 0 ? `(${duration} min)` : ''}
                                 </span>
                             </div>
@@ -178,13 +178,13 @@ export default function BookingConfirmation({
                     <form onSubmit={handleSubmit}>
                         <div className="form-group">
                             <label className="form-label" htmlFor="name">
-                                Emri i plotë *
+                                Full Name *
                             </label>
                             <input
                                 id="name"
                                 type="text"
                                 className="form-input"
-                                placeholder="Shkruani emrin tuaj"
+                                placeholder="Enter your name"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 style={errors.name ? { borderColor: 'var(--color-error-500)' } : {}}
@@ -198,7 +198,7 @@ export default function BookingConfirmation({
 
                         <div className="form-group">
                             <label className="form-label" htmlFor="phone">
-                                Numri i telefonit *
+                                Phone Number *
                             </label>
                             <input
                                 id="phone"
@@ -218,13 +218,13 @@ export default function BookingConfirmation({
 
                         <div className="form-group">
                             <label className="form-label" htmlFor="email">
-                                Email (opsionale)
+                                Email (optional)
                             </label>
                             <input
                                 id="email"
                                 type="email"
                                 className="form-input"
-                                placeholder="email@shembull.com"
+                                placeholder="email@example.com"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 style={errors.email ? { borderColor: 'var(--color-error-500)' } : {}}
@@ -238,12 +238,12 @@ export default function BookingConfirmation({
 
                         <div className="form-group">
                             <label className="form-label" htmlFor="notes">
-                                Shënime (opsionale)
+                                Notes (optional)
                             </label>
                             <textarea
                                 id="notes"
                                 className="form-input form-textarea"
-                                placeholder=" ndonjë informacion shtesë..."
+                                placeholder="Any additional information..."
                                 value={formData.notes}
                                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                                 rows={3}
@@ -252,7 +252,7 @@ export default function BookingConfirmation({
 
                         {/* Verification Method Selection - Mandatory */}
                         <div className="form-group">
-                            <label className="form-label">Mënyra e verifikimit *</label>
+                            <label className="form-label">Verification Method *</label>
                             <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                                 {/* WhatsApp Option */}
                                 <label
@@ -332,7 +332,7 @@ export default function BookingConfirmation({
 
                 <div className="modal-footer">
                     <button className="btn btn-secondary" onClick={onCancel} disabled={isSubmitting}>
-                        Anulo
+                        Cancel
                     </button>
                     <button
                         className="btn btn-primary"
@@ -342,7 +342,7 @@ export default function BookingConfirmation({
                         {isSubmitting ? (
                             <>
                                 <span className="spinner" style={{ width: '16px', height: '16px' }} />
-                                Duke rezervuar...
+                                Booking...
                             </>
                         ) : (
                             <>
@@ -350,7 +350,7 @@ export default function BookingConfirmation({
                                     <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
                                     <polyline points="22,4 12,14.01 9,11.01" />
                                 </svg>
-                                {isWaitlist ? 'Dërgo Kërkesën' : 'Konfirmo Terminin'}
+                                {isWaitlist ? 'Submit Request' : 'Confirm Appointment'}
                             </>
                         )}
                     </button>
@@ -359,3 +359,4 @@ export default function BookingConfirmation({
         </div>
     );
 }
+
