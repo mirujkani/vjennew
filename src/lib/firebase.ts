@@ -6,7 +6,7 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyA2qtFM0ppgnczSIGiCTNKcHDSxpKAbKN8",
+    apiKey: "AIzaSyA2qtFM0ppgnczsIGiCTNKcHDSxpKAbKN8",
     authDomain: "vjen-c6b73.firebaseapp.com",
     projectId: "vjen-c6b73",
     storageBucket: "vjen-c6b73.firebasestorage.app",
