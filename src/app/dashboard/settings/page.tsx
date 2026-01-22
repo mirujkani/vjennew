@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getBusiness, updateBusiness, getSpecialists, addSpecialist, deleteSpecialist } from '@/lib/store';
-import { Business, Specialist, Service } from '@/lib/types';
+import { getBusiness, updateBusiness, getSpecialists, addSpecialist, deleteSpecialist, getAvailability, updateAvailability } from '@/lib/store';
+import { Business, Specialist, Service, Availability } from '@/lib/types';
 import ImageUpload from '@/components/ui/ImageUpload';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -10,6 +10,7 @@ export default function SettingsPage() {
     const { language, setLanguage, t } = useLanguage();
     const [business, setBusiness] = useState<Business | null>(null);
     const [specialists, setSpecialists] = useState<Specialist[]>([]);
+    const [availability, setAvailabilityState] = useState<Availability | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -21,12 +22,14 @@ export default function SettingsPage() {
 
     const loadData = async () => {
         try {
-            const [biz, specs] = await Promise.all([
+            const [biz, specs, avail] = await Promise.all([
                 getBusiness(),
-                getSpecialists()
+                getSpecialists(),
+                getAvailability()
             ]);
             setBusiness(biz);
             setSpecialists(specs);
+            setAvailabilityState(avail);
         } catch (error) {
             console.error('Error loading data:', error);
         } finally {
@@ -49,6 +52,11 @@ export default function SettingsPage() {
             }
 
             await updateBusiness(updates);
+
+            if (availability) {
+                await updateAvailability(availability);
+            }
+
             setBusiness(updates);
             setSaved(true);
             setTimeout(() => setSaved(false), 3000);
@@ -360,6 +368,51 @@ export default function SettingsPage() {
                         placeholder="Describe your business..."
                     />
                 </div>
+
+                {availability && (
+                    <div className="form-group" style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--border-color)' }}>
+                        <label className="form-label" htmlFor="appointmentDuration">Appointment Duration</label>
+                        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--space-2)' }}>
+                            Set the standard length of your appointments (in minutes).
+                        </p>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                            {[15, 30, 45, 60].map(duration => (
+                                <button
+                                    key={duration}
+                                    onClick={() => setAvailabilityState({
+                                        ...availability,
+                                        defaultDuration: duration,
+                                        appointmentDurations: [duration]
+                                    })}
+                                    className={`btn ${availability.defaultDuration === duration ? 'btn-primary' : 'btn-outline'}`}
+                                    style={{ padding: 'var(--space-2) var(--space-4)' }}
+                                >
+                                    {duration} min
+                                </button>
+                            ))}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>or custom:</span>
+                                <input
+                                    type="number"
+                                    className="form-input"
+                                    style={{ width: '80px', padding: 'var(--space-2)' }}
+                                    value={availability.defaultDuration}
+                                    onChange={(e) => {
+                                        const val = parseInt(e.target.value);
+                                        if (val > 0) {
+                                            setAvailabilityState({
+                                                ...availability,
+                                                defaultDuration: val,
+                                                appointmentDurations: [val]
+                                            });
+                                        }
+                                    }}
+                                />
+                                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>min</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Services Toggle & Management */}
