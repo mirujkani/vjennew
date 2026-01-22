@@ -587,7 +587,7 @@ export async function generateTimeSlots(date: string, businessId?: string, speci
 
     const blockedSlots = await getBlockedSlots(date, businessId);
     const slotDuration = duration || availability.defaultDuration || 30; // Use requested duration or default
-    const step = 15; // 15 minute intervals for flexibility
+    const step = slotDuration; // Step matches duration (e.g., 30min slots start at 9:00, 9:30...)
 
     let currentTotalMinutes = startTotalMinutes;
 
