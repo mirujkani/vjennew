@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { getBusiness, updateBusiness, getSpecialists, addSpecialist, deleteSpecialist } from '@/lib/store';
 import { Business, Specialist, Service } from '@/lib/types';
 import ImageUpload from '@/components/ui/ImageUpload';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function SettingsPage() {
+    const { language, setLanguage, t } = useLanguage();
     const [business, setBusiness] = useState<Business | null>(null);
     const [specialists, setSpecialists] = useState<Specialist[]>([]);
     const [isSaving, setIsSaving] = useState(false);
@@ -179,7 +181,29 @@ export default function SettingsPage() {
 
     return (
         <div>
-            <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-6)' }}>Business Settings</h1>
+            <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-6)' }}>{t('settings.title')}</h1>
+
+            {/* Preferences */}
+            <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
+                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>{t('settings.language')}</h2>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
+                    {t('settings.language_desc')}
+                </p>
+                <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                    <button
+                        onClick={() => setLanguage('en')}
+                        className={`btn ${language === 'en' ? 'btn-primary' : 'btn-outline'}`}
+                    >
+                        English
+                    </button>
+                    <button
+                        onClick={() => setLanguage('sq')}
+                        className={`btn ${language === 'sq' ? 'btn-primary' : 'btn-outline'}`}
+                    >
+                        Shqip
+                    </button>
+                </div>
+            </div>
 
             {/* Booking Link */}
             <div className="card" style={{

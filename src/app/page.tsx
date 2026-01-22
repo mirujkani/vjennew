@@ -65,7 +65,7 @@ export default function HomePage() {
                     borderRadius: '50%',
                     filter: 'blur(60px)',
                 }} />
-                <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-16)', alignItems: 'center' }}>
+                <div className="container landing-hero-grid" style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     <div>
                         <div style={{
                             display: 'inline-flex',
@@ -190,7 +190,7 @@ export default function HomePage() {
             </section>
 
             {/* Features Section */}
-            <section id="features" style={{ padding: 'var(--space-20) var(--space-8)', background: 'white' }}>
+            <section id="features" className="landing-section-padding" style={{ background: 'white' }}>
                 <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     <div style={{ textAlign: 'center', marginBottom: 'var(--space-16)' }}>
                         <h2 style={{ fontSize: 'var(--text-3xl)', fontWeight: '700', marginBottom: 'var(--space-4)' }}>
@@ -227,8 +227,8 @@ export default function HomePage() {
             </section>
 
             {/* Booking Page Feature */}
-            <section style={{ padding: 'var(--space-20) var(--space-8)', background: 'var(--bg-secondary)' }}>
-                <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-16)', alignItems: 'center' }}>
+            <section className="landing-section-padding" style={{ background: 'var(--bg-secondary)' }}>
+                <div className="container landing-grid-2" style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     <div>
                         <div style={{
                             display: 'inline-block',
@@ -307,8 +307,8 @@ export default function HomePage() {
             </section>
 
             {/* Management & Dashboard */}
-            <section style={{ padding: 'var(--space-20) var(--space-8)', background: 'white' }}>
-                <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-16)', alignItems: 'center' }}>
+            <section className="landing-section-padding" style={{ background: 'white' }}>
+                <div className="container landing-grid-2" style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     <div style={{
                         background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
                         borderRadius: 'var(--radius-2xl)',
@@ -379,7 +379,7 @@ export default function HomePage() {
             </section>
 
             {/* How It Works */}
-            <section id="how-it-works" style={{ padding: 'var(--space-20) var(--space-8)', background: 'linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%)' }}>
+            <section id="how-it-works" className="landing-section-padding" style={{ background: 'linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%)' }}>
                 <div className="container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
                     <div style={{ textAlign: 'center', marginBottom: 'var(--space-16)' }}>
                         <h2 style={{ fontSize: 'var(--text-3xl)', fontWeight: '700', marginBottom: 'var(--space-4)' }}>
@@ -389,7 +389,7 @@ export default function HomePage() {
                             Four simple steps to transform your scheduling
                         </p>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-8)' }}>
+                    <div className="landing-grid-4">
                         {[
                             { step: '1', title: 'Create Profile', desc: 'Sign up and add your business details' },
                             { step: '2', title: 'Set Schedule', desc: 'Configure working hours and services' },
@@ -433,7 +433,7 @@ export default function HomePage() {
             </section>
 
             {/* FAQ Section */}
-            <section id="faq" style={{ padding: 'var(--space-20) var(--space-8)', background: 'white' }}>
+            <section id="faq" className="landing-section-padding" style={{ background: 'white' }}>
                 <div className="container" style={{ maxWidth: '800px', margin: '0 auto' }}>
                     <div style={{ textAlign: 'center', marginBottom: 'var(--space-12)' }}>
                         <h2 style={{ fontSize: 'var(--text-3xl)', fontWeight: '700', marginBottom: 'var(--space-4)' }}>
@@ -500,8 +500,7 @@ export default function HomePage() {
             </section>
 
             {/* CTA Section */}
-            <section style={{
-                padding: 'var(--space-20) var(--space-8)',
+            <section className="landing-section-padding" style={{
                 background: 'linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-800) 100%)',
                 textAlign: 'center',
                 color: 'white',

@@ -161,6 +161,7 @@ body {
   color: var(--text-primary);
   background: var(--bg-primary);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* ========================================
@@ -1342,4 +1343,78 @@ a:hover {
   width: 40px;
   height: 40px;
   color: var(--color-success-500);
+}
+
+/* ========================================
+   Landing Page Responsive Utilities
+   ======================================== */
+
+.landing-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .landing-hero-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-16);
+  }
+}
+
+.landing-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .landing-grid-2 {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-16);
+  }
+}
+
+.landing-grid-4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+
+@media (min-width: 640px) {
+  .landing-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .landing-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.landing-section-padding {
+  padding: var(--space-10) var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .landing-section-padding {
+    padding: var(--space-20) var(--space-8);
+  }
+}
+
+/* Fix for modal mobile overflow */
+.modal-content {
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@media (min-width: 640px) {
+  .modal-content {
+    width: 100%;
+    max-width: 500px;
+  }
 }
