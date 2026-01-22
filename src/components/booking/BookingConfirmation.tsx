@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { BookingFormData } from '@/lib/types';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface BookingConfirmationProps {
     businessName: string;
@@ -30,6 +31,7 @@ export default function BookingConfirmation({
     serviceName,
     servicePrice,
 }: BookingConfirmationProps) {
+    const { t, language } = useLanguage();
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -42,8 +44,10 @@ export default function BookingConfirmation({
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const formatDate = (dateStr: string) => {
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', {
+        const dateObj = new Date(dateStr);
+        // Map 'sq' to 'sq-AL', otherwise 'en-US'
+        const locale = language === 'sq' ? 'sq-AL' : 'en-US';
+        return dateObj.toLocaleDateString(locale, {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -59,17 +63,17 @@ export default function BookingConfirmation({
         const newErrors: Record<string, string> = {};
 
         if (!formData.name.trim()) {
-            newErrors.name = 'Name is required';
+            newErrors.name = t('booking.name_required') || 'Name is required';
         }
 
         if (!formData.phone.trim()) {
-            newErrors.phone = 'Phone number is required';
+            newErrors.phone = t('booking.phone_required') || 'Phone number is required';
         } else if (!/^[\d\s\-+()]+$/.test(formData.phone)) {
-            newErrors.phone = 'Please enter a valid phone number';
+            newErrors.phone = t('booking.phone_invalid') || 'Please enter a valid phone number';
         }
 
         if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = 'Please enter a valid email';
+            newErrors.email = t('booking.email_invalid') || 'Please enter a valid email';
         }
 
         setErrors(newErrors);
@@ -98,7 +102,7 @@ export default function BookingConfirmation({
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2 style={{ margin: 0, fontSize: 'var(--text-xl)' }}>
-                        {isWaitlist ? 'Join the Waitlist' : 'Confirm Your Appointment'}
+                        {isWaitlist ? t('booking.confirm_waitlist_title') : t('booking.confirm_title')}
                     </h2>
                     <button
                         className="btn btn-ghost btn-icon"
@@ -150,8 +154,8 @@ export default function BookingConfirmation({
                                     <polyline points="12,6 12,12 16,14" />
                                 </svg>
                                 <span style={{ color: 'var(--text-secondary)' }}>
-                                    {isWaitlist ? 'Preferred times: ' : ''}
-                                    {formatTime(time)} {duration > 0 ? `(${duration} min)` : ''}
+                                    {isWaitlist ? t('booking.waitlist_selected') : ''}
+                                    {formatTime(time)} {duration > 0 ? `(${duration} ${t('common.min')})` : ''}
                                 </span>
                             </div>
                             {serviceName && (
@@ -178,13 +182,13 @@ export default function BookingConfirmation({
                     <form onSubmit={handleSubmit}>
                         <div className="form-group">
                             <label className="form-label" htmlFor="name">
-                                Full Name *
+                                {t('booking.full_name')} *
                             </label>
                             <input
                                 id="name"
                                 type="text"
                                 className="form-input"
-                                placeholder="Enter your name"
+                                placeholder={t('booking.name_placeholder')}
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 style={errors.name ? { borderColor: 'var(--color-error-500)' } : {}}
@@ -198,7 +202,7 @@ export default function BookingConfirmation({
 
                         <div className="form-group">
                             <label className="form-label" htmlFor="phone">
-                                Phone Number *
+                                {t('booking.phone_number')} *
                             </label>
                             <input
                                 id="phone"
@@ -218,7 +222,7 @@ export default function BookingConfirmation({
 
                         <div className="form-group">
                             <label className="form-label" htmlFor="email">
-                                Email (optional)
+                                {t('booking.email_optional')}
                             </label>
                             <input
                                 id="email"
@@ -238,12 +242,12 @@ export default function BookingConfirmation({
 
                         <div className="form-group">
                             <label className="form-label" htmlFor="notes">
-                                Notes (optional)
+                                {t('booking.notes_optional')}
                             </label>
                             <textarea
                                 id="notes"
                                 className="form-input form-textarea"
-                                placeholder="Any additional information..."
+                                placeholder={t('booking.notes_placeholder')}
                                 value={formData.notes}
                                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                                 rows={3}
@@ -326,13 +330,12 @@ export default function BookingConfirmation({
                                 </label>
                             </div>
                         </div>
-                        {/* Recurring Appointment Selection removed for visitors */}
                     </form>
                 </div>
 
                 <div className="modal-footer">
                     <button className="btn btn-secondary" onClick={onCancel} disabled={isSubmitting}>
-                        Cancel
+                        {t('common.cancel')}
                     </button>
                     <button
                         className="btn btn-primary"
@@ -342,7 +345,7 @@ export default function BookingConfirmation({
                         {isSubmitting ? (
                             <>
                                 <span className="spinner" style={{ width: '16px', height: '16px' }} />
-                                Booking...
+                                {t('booking.processing')}
                             </>
                         ) : (
                             <>
@@ -350,7 +353,7 @@ export default function BookingConfirmation({
                                     <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
                                     <polyline points="22,4 12,14.01 9,11.01" />
                                 </svg>
-                                {isWaitlist ? 'Submit Request' : 'Confirm Appointment'}
+                                {isWaitlist ? t('booking.join_waitlist') : t('booking.confirm_booking')}
                             </>
                         )}
                     </button>
@@ -359,4 +362,3 @@ export default function BookingConfirmation({
         </div>
     );
 }
-

@@ -9,10 +9,12 @@ import BookingConfirmation from '@/components/booking/BookingConfirmation';
 import BookingSuccess from '@/components/booking/BookingSuccess';
 import { BookingFormData, Specialist, Business, Availability, WaitlistEntry, Service } from '@/lib/types';
 import { createWaitlistEntry, getBusinessByLink, getSpecialists, getAvailability, generateTimeSlots, createAppointment } from '@/lib/store';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function BookingPage() {
     const params = useParams();
     const businessId = params.businessId as string;
+    const { t } = useLanguage();
 
     const [business, setBusiness] = useState<Business | null>(null);
     const [specialists, setSpecialists] = useState<Specialist[]>([]);
@@ -159,9 +161,9 @@ export default function BookingPage() {
     if (!business) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-primary)', padding: 'var(--space-6)', textAlign: 'center' }}>
-                <h1 style={{ color: 'var(--text-primary)', marginBottom: 'var(--space-4)' }}>Business not found</h1>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-6)' }}>The link you are looking for may be incorrect or has expired.</p>
-                <Link href="/" className="btn btn-primary">Return to Home Page</Link>
+                <h1 style={{ color: 'var(--text-primary)', marginBottom: 'var(--space-4)' }}>{t('booking.business_not_found')}</h1>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-6)' }}>{t('booking.link_expired')}</p>
+                <Link href="/" className="btn btn-primary">{t('booking.return_home')}</Link>
             </div>
         );
     }
@@ -198,7 +200,7 @@ export default function BookingPage() {
                 {/* Specialist Selection (only if more than 1) */}
                 {specialists.length > 1 && step === 'selection' && (
                     <div style={{ marginBottom: 'var(--space-6)' }}>
-                        <h3 style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-3)' }}>Select Specialist:</h3>
+                        <h3 style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-3)' }}>{t('booking.select_specialist')}:</h3>
                         <div style={{ display: 'flex', gap: 'var(--space-3)', overflowX: 'auto', paddingBottom: 'var(--space-2)' }}>
                             {specialists.map(spec => (
                                 <button
@@ -230,7 +232,7 @@ export default function BookingPage() {
                 {/* Service Selection */}
                 {business.showServices && (business.services || []).length > 0 && step === 'selection' && (
                     <div style={{ marginBottom: 'var(--space-6)' }}>
-                        <h3 style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-3)' }}>Select Service:</h3>
+                        <h3 style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-3)' }}>{t('booking.select_service')}:</h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                             {(business.services || []).map(service => (
                                 <button
@@ -271,7 +273,7 @@ export default function BookingPage() {
                 {step === 'selection' && (
                     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
                         <div>
-                            <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>Select Date</h2>
+                            <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>{t('booking.select_date')}</h2>
                             <div className="card" style={{ padding: 'var(--space-4)' }}>
                                 <CalendarPicker
                                     onDateSelect={handleDateSelect}
@@ -283,7 +285,7 @@ export default function BookingPage() {
 
                         {selectedDate && (
                             <div className="animate-slide-up">
-                                <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>Select Time</h2>
+                                <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>{t('booking.select_time')}</h2>
                                 <div className="card" style={{ padding: 'var(--space-1)' }}>
                                     <TimeSlotGrid
                                         slots={timeSlots}
@@ -311,10 +313,10 @@ export default function BookingPage() {
                                             />
                                             <div>
                                                 <p style={{ margin: 0, fontWeight: 'var(--font-medium)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
-                                                    Would you like to join the waitlist?
+                                                    {t('booking.waitlist_prompt')}
                                                 </p>
                                                 <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-                                                    We will notify you if your preferred time becomes available again.
+                                                    {t('booking.waitlist_desc')}
                                                 </p>
                                             </div>
                                         </label>
@@ -322,7 +324,7 @@ export default function BookingPage() {
                                         {isWaitlistMode && (
                                             <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--border-color)' }}>
                                                 <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--space-3)' }}>
-                                                    {selectedWaitlistTimes.length === 0 ? 'Select the times above for which you want to be notified.' : 'You have selected:'}
+                                                    {selectedWaitlistTimes.length === 0 ? t('booking.waitlist_select_prompt') : t('booking.waitlist_selected')}
                                                 </p>
                                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
                                                     {selectedWaitlistTimes.map(time => (
@@ -337,7 +339,7 @@ export default function BookingPage() {
                                                         onClick={() => setStep('waitlist_confirmation')}
                                                         style={{ marginTop: 'var(--space-3)' }}
                                                     >
-                                                        Continue with Waitlist ({selectedWaitlistTimes.length})
+                                                        {t('booking.continue_waitlist')} ({selectedWaitlistTimes.length})
                                                     </button>
                                                 )}
                                             </div>
@@ -398,7 +400,7 @@ export default function BookingPage() {
                 {/* Footer Info */}
                 <footer style={{ marginTop: 'var(--space-12)', textAlign: 'center', borderTop: '1px solid var(--border-color)', paddingTop: 'var(--space-6)' }}>
                     <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
-                        Powered by <a href="#" style={{ color: 'var(--color-primary-400)', textDecoration: 'none', fontWeight: 'bold' }}>Vjen</a>
+                        {t('common.powered_by')} <a href="#" style={{ color: 'var(--color-primary-400)', textDecoration: 'none', fontWeight: 'bold' }}>Vjen</a>
                     </p>
                 </footer>
             </div>

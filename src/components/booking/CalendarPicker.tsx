@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface CalendarPickerProps {
     selectedDate: string | null;
@@ -13,14 +14,20 @@ export default function CalendarPicker({
     onDateSelect,
     workingDays = [1, 2, 3, 4, 5],
 }: CalendarPickerProps) {
+    const { language } = useLanguage();
     const [currentMonth, setCurrentMonth] = useState(new Date());
 
-    const monthNames = [
+    const monthNames = language === 'sq' ? [
+        'Janar', 'Shkurt', 'Mars', 'Prill', 'Maj', 'Qershor',
+        'Korrik', 'Gusht', 'Shtator', 'Tetor', 'Nëntor', 'Dhjetor'
+    ] : [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
 
-    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekDays = language === 'sq' ?
+        ['Die', 'Hën', 'Mar', 'Mër', 'Enj', 'Pre', 'Sht'] :
+        ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     const getDaysInMonth = (date: Date) => {
         const year = date.getFullYear();
@@ -89,6 +96,17 @@ export default function CalendarPicker({
         return `${year}-${month}-${dayStr}`;
     };
 
+    const getDayName = (day: number) => {
+        const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+        if (language === 'sq') {
+            const days = ['E Diel', 'E Hënë', 'E Martë', 'E Mërkurë', 'E Enjte', 'E Premte', 'E Shtunë'];
+            return days[date.getDay()];
+        } else {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return days[date.getDay()];
+        }
+    };
+
     const handleDateClick = (day: number) => {
         if (isDateDisabled(day)) return;
         onDateSelect(formatDate(day));
@@ -155,9 +173,14 @@ export default function CalendarPicker({
                             }`}
                         onClick={() => day !== null && handleDateClick(day)}
                         disabled={day === null || isDateDisabled(day)}
-                        style={{ position: 'relative' }}
+                        style={{ position: 'relative', height: 'auto', minHeight: '40px', padding: '8px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px' }}
                     >
-                        {day}
+                        {day !== null && (
+                            <>
+                                <span style={{ fontSize: '14px', fontWeight: '500' }}>{day}</span>
+                                <span style={{ fontSize: '10px', opacity: 0.8, fontWeight: 'normal' }}>{getDayName(day)}</span>
+                            </>
+                        )}
                     </button>
                 ))}
             </div>
