@@ -218,9 +218,9 @@ export default function SettingsPage() {
                 marginBottom: 'var(--space-6)',
                 background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%)',
             }}>
-                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>Booking Link</h2>
+                <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>{t('booking.title')}</h2>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
-                    Share this link with your clients so they can book appointments.
+                    {t('booking.desc')}
                 </p>
 
                 <div style={{
@@ -254,7 +254,7 @@ export default function SettingsPage() {
                                     <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
                                     <polyline points="22,4 12,14.01 9,11.01" />
                                 </svg>
-                                Copied!
+                                {t('booking.copied')}
                             </>
                         ) : (
                             <>
@@ -262,7 +262,7 @@ export default function SettingsPage() {
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                                     <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                                 </svg>
-                                Copy Link
+                                {t('booking.copy')}
                             </>
                         )}
                     </button>
@@ -270,8 +270,8 @@ export default function SettingsPage() {
 
                 <div className="form-group" style={{ margin: 0, maxWidth: '400px' }}>
                     <label className="form-label" htmlFor="uniqueLink">
-                        Customize Unique Link
-                        {business.urlLocked && <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>(Locked)</span>}
+                        {t('booking.customize')}
+                        {business.urlLocked && <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>{t('booking.locked')}</span>}
                     </label>
                     <input
                         id="uniqueLink"
@@ -285,7 +285,7 @@ export default function SettingsPage() {
                     />
                     {!business.urlLocked && business.uniqueLink !== 'myclinic' && (
                         <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-warning-500)', marginTop: 'var(--space-2)' }}>
-                            Warning: After saving, this link will be locked and cannot be changed.
+                            {t('booking.warning')}
                         </p>
                     )}
                 </div>
@@ -299,13 +299,13 @@ export default function SettingsPage() {
                     justifyContent: 'space-between',
                     marginBottom: 'var(--space-6)',
                 }}>
-                    <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Business Information</h2>
+                    <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>{t('business.info_title')}</h2>
                     <button
                         className="btn btn-primary"
                         onClick={handleSave}
                         disabled={isSaving}
                     >
-                        {isSaving ? 'Saving...' : (saved ? 'Saved!' : 'Save Changes')}
+                        {isSaving ? t('settings.saving') : (saved ? t('settings.saved') : t('settings.save'))}
                     </button>
                 </div>
 
@@ -316,7 +316,7 @@ export default function SettingsPage() {
                 }}>
                     <div style={{ gridColumn: '1 / -1' }}>
                         <ImageUpload
-                            label="Business Logo"
+                            label={t('business.logo')}
                             currentImage={business.logo}
                             onImageUploaded={(url) => setBusiness({ ...business, logo: url })}
                             directory="business-logos"
@@ -324,7 +324,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label" htmlFor="name">Business Name</label>
+                        <label className="form-label" htmlFor="name">{t('business.name')}</label>
                         <input
                             id="name"
                             type="text"
@@ -335,7 +335,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label" htmlFor="phone">Phone Number</label>
+                        <label className="form-label" htmlFor="phone">{t('business.phone')}</label>
                         <input
                             id="phone"
                             type="tel"
@@ -346,7 +346,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label" htmlFor="address">Address</label>
+                        <label className="form-label" htmlFor="address">{t('business.address')}</label>
                         <input
                             id="address"
                             type="text"
@@ -358,7 +358,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="form-group" style={{ marginTop: 'var(--space-4)' }}>
-                    <label className="form-label" htmlFor="description">Description</label>
+                    <label className="form-label" htmlFor="description">{t('business.desc')}</label>
                     <textarea
                         id="description"
                         className="form-input form-textarea"
@@ -371,9 +371,9 @@ export default function SettingsPage() {
 
                 {availability && (
                     <div className="form-group" style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--border-color)' }}>
-                        <label className="form-label" htmlFor="appointmentDuration">Appointment Duration</label>
+                        <label className="form-label" htmlFor="appointmentDuration">{t('appointments.duration_title')}</label>
                         <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--space-2)' }}>
-                            Set the standard length of your appointments (in minutes).
+                            {t('appointments.duration_desc')}
                         </p>
                         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
                             {[15, 30, 45, 60].map(duration => (
@@ -387,11 +387,11 @@ export default function SettingsPage() {
                                     className={`btn ${availability.defaultDuration === duration ? 'btn-primary' : 'btn-outline'}`}
                                     style={{ padding: 'var(--space-2) var(--space-4)' }}
                                 >
-                                    {duration} min
+                                    {duration} {t('common.min')}
                                 </button>
                             ))}
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>or custom:</span>
+                                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>{t('common.or_custom')}</span>
                                 <input
                                     type="number"
                                     className="form-input"
@@ -408,7 +408,7 @@ export default function SettingsPage() {
                                         }
                                     }}
                                 />
-                                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>min</span>
+                                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>{t('common.min')}</span>
                             </div>
                         </div>
                     </div>
@@ -424,9 +424,9 @@ export default function SettingsPage() {
                     marginBottom: 'var(--space-4)',
                 }}>
                     <div>
-                        <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Services and Pricing</h2>
+                        <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>{t('services.title')}</h2>
                         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 'var(--space-1) 0 0' }}>
-                            Enable to display services on your booking page
+                            {t('services.desc')}
                         </p>
                     </div>
                     <div
@@ -461,7 +461,7 @@ export default function SettingsPage() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
                             {(business.services || []).length === 0 ? (
                                 <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', textAlign: 'center', padding: 'var(--space-4)' }}>
-                                    You have no services added. Add your services below.
+                                    {t('services.empty')}
                                 </p>
                             ) : (
                                 (business.services || []).map((service) => (
@@ -508,7 +508,7 @@ export default function SettingsPage() {
                                 <line x1="12" y1="5" x2="12" y2="19" />
                                 <line x1="5" y1="12" x2="19" y2="12" />
                             </svg>
-                            Add Service
+                            {t('services.add')}
                         </button>
                     </>
                 )}
@@ -518,7 +518,7 @@ export default function SettingsPage() {
                     <div className="modal-overlay" onClick={() => setShowAddService(false)}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
-                                <h3 style={{ margin: 0 }}>Add Service</h3>
+                                <h3 style={{ margin: 0 }}>{t('services.modal_title')}</h3>
                                 <button className="btn btn-ghost btn-icon" onClick={() => setShowAddService(false)}>
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -528,7 +528,7 @@ export default function SettingsPage() {
                             </div>
                             <div className="modal-body">
                                 <div className="form-group">
-                                    <label className="form-label">Service Name *</label>
+                                    <label className="form-label">{t('services.name_label')}</label>
                                     <input
                                         type="text"
                                         className="form-input"
@@ -538,7 +538,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Price (€) *</label>
+                                    <label className="form-label">{t('services.price_label')}</label>
                                     <input
                                         type="number"
                                         className="form-input"
@@ -550,7 +550,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Description (optional)</label>
+                                    <label className="form-label">{t('services.desc_label')}</label>
                                     <textarea
                                         className="form-input form-textarea"
                                         value={newService.description}
@@ -561,8 +561,8 @@ export default function SettingsPage() {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button className="btn btn-secondary" onClick={() => setShowAddService(false)}>Cancel</button>
-                                <button className="btn btn-primary" onClick={handleAddService}>Add</button>
+                                <button className="btn btn-secondary" onClick={() => setShowAddService(false)}>{t('common.cancel')}</button>
+                                <button className="btn btn-primary" onClick={handleAddService}>{t('common.add')}</button>
                             </div>
                         </div>
                     </div>
@@ -577,9 +577,9 @@ export default function SettingsPage() {
                     justifyContent: 'space-between',
                 }}>
                     <div>
-                        <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Notifications</h2>
+                        <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>{t('notifications.title')}</h2>
                         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 'var(--space-1) 0 0' }}>
-                            Enable sound for new notifications
+                            {t('notifications.desc')}
                         </p>
                     </div>
                     <div
@@ -618,13 +618,13 @@ export default function SettingsPage() {
                     justifyContent: 'space-between',
                     marginBottom: 'var(--space-4)',
                 }}>
-                    <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Specialists</h2>
+                    <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>{t('specialists.title')}</h2>
                     <button className="btn btn-secondary btn-sm" onClick={() => setShowAddSpecialist(true)}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <line x1="12" y1="5" x2="12" y2="19" />
                             <line x1="5" y1="12" x2="19" y2="12" />
                         </svg>
-                        Add New
+                        {t('specialists.add')}
                     </button>
                 </div>
 
@@ -680,7 +680,7 @@ export default function SettingsPage() {
                     <div className="modal-overlay" onClick={() => setShowAddSpecialist(false)}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
-                                <h3 style={{ margin: 0 }}>Add Specialist</h3>
+                                <h3 style={{ margin: 0 }}>{t('specialists.modal_title')}</h3>
                                 <button className="btn btn-ghost btn-icon" onClick={() => setShowAddSpecialist(false)}>
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -690,14 +690,14 @@ export default function SettingsPage() {
                             </div>
                             <div className="modal-body">
                                 <ImageUpload
-                                    label="Profile Photo"
+                                    label={t('specialists.profile_photo')}
                                     currentImage={newSpecialist.avatar}
                                     onImageUploaded={(url) => setNewSpecialist({ ...newSpecialist, avatar: url })}
                                     directory="specialist-avatars"
                                     circular={true}
                                 />
                                 <div className="form-group">
-                                    <label className="form-label">Name *</label>
+                                    <label className="form-label">{t('specialists.name_label')}</label>
                                     <input
                                         type="text"
                                         className="form-input"
@@ -707,7 +707,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Title *</label>
+                                    <label className="form-label">{t('specialists.title_label')}</label>
                                     <input
                                         type="text"
                                         className="form-input"
@@ -717,7 +717,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Bio</label>
+                                    <label className="form-label">{t('specialists.bio_label')}</label>
                                     <textarea
                                         className="form-input form-textarea"
                                         value={newSpecialist.bio}
@@ -727,7 +727,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Services (comma separated)</label>
+                                    <label className="form-label">{t('specialists.services_label')}</label>
                                     <input
                                         type="text"
                                         className="form-input"
@@ -738,8 +738,8 @@ export default function SettingsPage() {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button className="btn btn-secondary" onClick={() => setShowAddSpecialist(false)}>Cancel</button>
-                                <button className="btn btn-primary" onClick={handleAddSpecialist}>Add</button>
+                                <button className="btn btn-secondary" onClick={() => setShowAddSpecialist(false)}>{t('common.cancel')}</button>
+                                <button className="btn btn-primary" onClick={handleAddSpecialist}>{t('common.add')}</button>
                             </div>
                         </div>
                     </div>
