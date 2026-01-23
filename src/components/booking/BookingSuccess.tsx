@@ -9,11 +9,13 @@ interface BookingSuccessProps {
     date: string;
     time: string;
     onRestart: () => void;
+    isWaitlist?: boolean;
 }
 
 export default function BookingSuccess({
     clientName,
     onRestart,
+    isWaitlist = false,
 }: BookingSuccessProps) {
     const { t } = useLanguage();
 
@@ -29,15 +31,15 @@ export default function BookingSuccess({
                     </div>
 
                     <h2 style={{ marginBottom: 'var(--space-2)', color: 'var(--text-primary)' }}>
-                        {t('booking.success_title')}
+                        {isWaitlist ? t('booking.waitlist_success_title') : t('booking.success_title')}
                     </h2>
 
                     <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-8)' }}>
-                        {t('booking.success_message')}
+                        {isWaitlist ? t('booking.waitlist_success_message') : t('booking.success_message')}
                     </p>
 
                     <button className="btn btn-primary w-full" onClick={onRestart}>
-                        {t('common.back')}
+                        {isWaitlist ? (t('common.close') || 'Close') : t('common.back')}
                     </button>
                 </div>
             </div>

@@ -387,6 +387,7 @@ export default function BookingPage() {
                         date={lastAppointment.date}
                         time={lastAppointment.time}
                         clientName={lastAppointment.clientName}
+                        isWaitlist={isWaitlistMode}
                         onRestart={() => {
                             setStep('selection');
                             setSelectedTime('');
